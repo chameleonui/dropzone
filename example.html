@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Dropzone test</title>
+	<style>
+		body {
+			padding: 2em;
+		}
+
+		#dropzone {
+			display: block;
+			position: relative;
+			border: 3px solid rgba(0,0,0,.3);
+			height: 300px;
+			overflow: hidden;
+			clear: both;
+		}
+		.gallery-grid {
+			display: block;
+			clear: both;
+		}
+		.gallery-grid > li {
+			display: inline-block;
+			width: 20%;
+			margin: 0 15px;
+			padding: 0;
+			margin-bottom: 24px;
+			height: 200px;
+			float: left;
+		}
+		.gallery-item {
+			border: 1px solid silver;
+			background: rgba(0,0,0,.4);
+		}
+		.dropzone {
+			text-align: center;
+		}
+		.dropzone-success {
+			border: 3px dashed green;
+		}
+		.dropzone-error {
+			border: 3px dashed red;
+		}
+		.dropzone-progress {
+			border: 3px dashed yellow;
+		}
+		.dropzone-default {
+			border: 3px dashed gray;
+		}
+		.dropzone-dragover {
+			border: 3px dashed blue;
+		}
+		.dropzone-success,
+		.dropzone-error,
+		.dropzone-default,
+		.dropzone-progress {
+			display: none;
+		}
+		.dropzone.is-success .dropzone-success,
+		.dropzone.is-error .dropzone-error,
+		.dropzone.is-default .dropzone-default,
+		.dropzone.is-progress .dropzone-progress {
+			display: block;
+		}
+	</style>
+</head>
+<body>
+
+	<h1>Dropzone test</h1>
+
+	<ul class="gallery-grid">
+		<li class="gallery-item">block</li>
+	</ul>
+
+	
+	<script src="build/build.js"></script>
+	<script>
+		var $ = require('jquery');
+    	var Dropzone = require('dropzone');
+
+    	var errors = {
+    		work: 'http://daidalos.apiary.io/image-block/image/upload'
+    	}
+
+    	var dropOptions = {
+    		uploadUrl: 'http://daidalos.apiary.io/image-block/image/upload'
+    	}
+    	var drop = new Dropzone('.gallery-grid', dropOptions);
+
+    	var stateTemplatesVars = {
+			error: {errorMsg: 'Error msg!'},
+			success: {successMsg: 'Success!'}
+		};
+
+		drop.show(stateTemplatesVars);
+    	drop.templateState('success','<i class="icon-plus"></i><span>{{=it.successMsg}}</span>', {successMsg: 'Success!'});
+		drop.templateState('error','{{=it.errorMsg}}', {errorMsg: 'Error msg!'});
+		
+
+		drop.on('uploadBegin', function(){
+			// Do something on upload begin
+		});
+
+		drop.on('uploadProgress', function(){
+			// Do something on upload progress
+		});
+
+		drop.on('uploadError', function(e){
+			// Do something on upload error
+		});
+
+		drop.on('uploadEnd', function(){
+			// Do something on upload end
+			// console.log(this.xhrResponse);
+		});
+
+	</script>
+</body>
+</html>
