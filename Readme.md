@@ -1,13 +1,13 @@
 
-# dropdown
+# Dropzone
 
-  Dropdown nav for Chameleon UI
+  Dropzone component
 
 ## Installation
 
   Install with [component(1)](http://component.io):
 
-    $ component install chameleonui/dropdown
+    $ component install chameleonui/dropzone
 
 ## API
 
