@@ -39,6 +39,7 @@ function Dropzone(element, options) {
 	// this._input = this._$element.children(this.options.classes.dropzone).find('#'+this.options.uploadInputId);
 	this._images = null;
 	this.xhrResponse = null;
+	this.resJson = null;
 
 	this._isVisible = false;
 	this._template = null;
@@ -124,7 +125,8 @@ Dropzone.prototype._onUploadProgress = function(event) {
 };
 
 Dropzone.prototype._onUploadError = function(event) {
-	this.updateState('error', {errorMsg: (this.xhrResponse === null) ? 'Error!' : this.xhrResponse.statusText });
+	// this.updateState('error', {errorMsg: (this.xhrResponse === null) ? 'Error!' : this.xhrResponse.statusText });
+	this.updateState('error', {errorMsg: (this.xhrResponse === null) ? 'Error!' : (this.resJson.statusText === null) ? 'Error!' : this.resJson.statusText });
 	this.toggleState(this.options.classes.isError);
 
 	this.emit('uploadError');
@@ -136,15 +138,20 @@ Dropzone.prototype._onUploadEnd = function(res) {
 	this.xhrResponse = res;
 
 	if (this.xhrResponse.status === 200) {
-		this.toggleState(this.options.classes.isSuccess);
-		setTimeout(function(){
-			_this.toggleState(_this.options.classes.isDefault);
-		}, 1000);
+		this.resJson = JSON.parse(this.xhrResponse.response);
+		if (this.resJson.status === 200) {
+			this.toggleState(this.options.classes.isSuccess);
+			setTimeout(function(){
+				_this.toggleState(_this.options.classes.isDefault);
+			}, 1000);
+			this.emit('uploadEnd');
+		} else {
+			this._onUploadError();		
+		}
 	} else {
 		this._onUploadError();
 	}
 
-	this.emit('uploadEnd');
 	return this;
 };
 
@@ -167,6 +174,7 @@ Dropzone.prototype._uploadFiles = function() {
 
 		upload.on('end', function(res){
 			_this._onUploadEnd(res);
+			console.log(res);
 		});
 
 		upload.on('error', function(e){

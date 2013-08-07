@@ -108,11 +108,12 @@
 
 		drop.on('uploadError', function(e){
 			// Do something on upload error
+			// console.log(e);
 		});
 
 		drop.on('uploadEnd', function(){
 			// Do something on upload end
-			// console.log(this.xhrResponse);
+			console.log(this.xhrResponse);
 		});
 
 	</script>
