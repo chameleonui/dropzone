@@ -8,7 +8,7 @@ module.exports = Dropzone;
 
 // it.something template must be function -> it.something()
 var defaults = {
-    template: "<li class='dropzone is-default'><div class='dropzone-default'><div class='dropzone-default-body'>{{=it.default()}}</div><div class='dropzone-dragover-body'><i class='icon-plus'></i><div class='dropzone-icon-title'>Place items here</div></div><div class='dropzone-active-area'><input id='dropzone-fileupload' type='file' name='{{=it.inputName()}}' {{=it.multiple()}}></div></div><div class='dropzone-success'>{{=it.success()}}</div><div class='dropzone-error'>{{=it.error()}}</div><div class='dropzone-progress'>{{=it.progress()}}</div></li>",
+    template: "<li class='dropzone is-default'><div class='dropzone-default'><div class='dropzone-default-body'>{{=it.default()}}</div><div class='dropzone-dragover-body'><i class='icon-plus'></i><div class='dropzone-icon-title'>Place items here</div></div><div class='dropzone-active-area'><input id='dropzone-fileupload' type='file' name='{{=it.inputName()}}' {{=it.multiple()}}></div></div><div class='dropzone-success'>{{=it.success()}}</div><a href='#' class='dropzone-error'>{{=it.error()}}</a><div class='dropzone-progress'>{{=it.progress()}}</div></li>",
     renderMethod: 'prepend',
     uploadInputId: 'dropzone-fileupload',
     uploadUrl: null,
@@ -53,6 +53,7 @@ function Dropzone(element, options) {
 	};
 	
 	this.template();
+	this._onClickError();
 }
 
 // Inherit features from Emmiter 
@@ -206,5 +207,12 @@ Dropzone.prototype._inputOnDragleave = function() {
 	$(this._inputId).on('dragleave', function(e){
 	    e.preventDefault();
 		_this.toggleState(_this.options.classes.isDefault);
+	});
+};
+
+Dropzone.prototype._onClickError = function() {
+	$('body').on('click', this.options.classes.dropzone+' > '+this.options.classes.error, this, function(e){
+		e.preventDefault();
+		e.data.toggleState(e.data.options.classes.isDefault);
 	});
 };
