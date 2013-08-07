@@ -2,7 +2,7 @@
   "name": "dropzone",
   "repo": "chameleonui/dropzone",
   "description": "Dropzone Element",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "keywords": [],
   "dependencies": {
     "component/jquery": "1.9.1",

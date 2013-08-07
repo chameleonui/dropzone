@@ -8,7 +8,7 @@ module.exports = Dropzone;
 
 // it.something template must be function -> it.something()
 var defaults = {
-    template: "<li class='dropzone is-default'><div class='dropzone-default'><div class='dropzone-default-body'>{{=it.default()}}</div><div class='dropzone-dragover-body'><i class='icon-plus'></i><div class='dropzone-icon-title'>Place items here</div></div><div class='dropzone-active-area'><input id='dropzone-fileupload' type='file' name='{{=it.inputName()}}' {{=it.multiple()}}></div></div><div class='dropzone-success'>{{=it.success()}}</div><div class='dropzone-error'>{{=it.error()}}</div><div class='dropzone-progress'>{{=it.progress()}}</div></li>",
+    template: "<li class='dropzone is-default'><div class='dropzone-default'><div class='dropzone-default-body'>{{=it.default()}}</div><div class='dropzone-dragover-body'><i class='icon-plus'></i><div class='dropzone-icon-title'>Place items here</div></div><div class='dropzone-active-area'><input id='dropzone-fileupload' type='file' name='{{=it.inputName()}}' {{=it.multiple()}}></div></div><div class='dropzone-success'>{{=it.success()}}</div><a href='#' class='dropzone-error'>{{=it.error()}}</a><div class='dropzone-progress'>{{=it.progress()}}</div></li>",
     renderMethod: 'prepend',
     uploadInputId: 'dropzone-fileupload',
     uploadUrl: null,
@@ -39,6 +39,7 @@ function Dropzone(element, options) {
 	// this._input = this._$element.children(this.options.classes.dropzone).find('#'+this.options.uploadInputId);
 	this._images = null;
 	this.xhrResponse = null;
+	this.resJson = null;
 
 	this._isVisible = false;
 	this._template = null;
@@ -52,6 +53,7 @@ function Dropzone(element, options) {
 	};
 	
 	this.template();
+	this._onClickError();
 }
 
 // Inherit features from Emmiter 
@@ -124,8 +126,9 @@ Dropzone.prototype._onUploadProgress = function(event) {
 };
 
 Dropzone.prototype._onUploadError = function(event) {
-	this.updateState('error', {errorMsg: (this.xhrResponse === null) ? 'Error!' : this.xhrResponse.statusText });
-	this.toggleState(this.options.classes.isError);
+	// this.updateState('error', {errorMsg: (this.xhrResponse === null) ? 'Error!' : this.xhrResponse.statusText });
+	this.updateState('error', {errorMsg: (this.xhrResponse === null) ? 'Error!' : (this.resJson.statusText === null) ? 'Error!' : this.resJson.statusText });
+	this.toggleState(this.options.classes.isError)._resetInputFile();
 
 	this.emit('uploadError');
 	return this;
@@ -136,15 +139,20 @@ Dropzone.prototype._onUploadEnd = function(res) {
 	this.xhrResponse = res;
 
 	if (this.xhrResponse.status === 200) {
-		this.toggleState(this.options.classes.isSuccess);
-		setTimeout(function(){
-			_this.toggleState(_this.options.classes.isDefault);
-		}, 1000);
+		this.resJson = JSON.parse(this.xhrResponse.response);
+		if (this.resJson.status === 200) {
+			this.toggleState(this.options.classes.isSuccess);
+			setTimeout(function(){
+				_this.toggleState(_this.options.classes.isDefault)._resetInputFile();
+			}, 1000);
+			this.emit('uploadEnd');
+		} else {
+			this._onUploadError();		
+		}
 	} else {
 		this._onUploadError();
 	}
 
-	this.emit('uploadEnd');
 	return this;
 };
 
@@ -175,6 +183,7 @@ Dropzone.prototype._uploadFiles = function() {
 	}
 
 	this.emit('uploadBegin');
+	return this;
 };
 
 Dropzone.prototype._inputOnChange = function() {
@@ -183,6 +192,8 @@ Dropzone.prototype._inputOnChange = function() {
 		e.preventDefault();
 		_this._uploadFiles();
 	});
+
+	return this;
 };
 
 Dropzone.prototype._inputOnDragover = function() {
@@ -191,6 +202,8 @@ Dropzone.prototype._inputOnDragover = function() {
 	    e.preventDefault();
 		_this.toggleState(_this.options.classes.isDragover);
 	});
+
+	return this;
 };
 
 Dropzone.prototype._inputOnDragleave = function() {
@@ -199,4 +212,24 @@ Dropzone.prototype._inputOnDragleave = function() {
 	    e.preventDefault();
 		_this.toggleState(_this.options.classes.isDefault);
 	});
+
+	return this;
 };
+
+Dropzone.prototype._onClickError = function() {
+	$('body').on('click', this.options.classes.dropzone+' > '+this.options.classes.error, this, function(e){
+		e.preventDefault();
+		e.data.toggleState(e.data.options.classes.isDefault)._resetInputFile();
+	});
+
+	return this;
+};
+
+Dropzone.prototype._resetInputFile = function() {
+	var $inputFileID = $(this._inputId);
+	$inputFileID.replaceWith( $inputFileID = $inputFileID.clone( true ) );
+
+	return this;
+};
+
+
