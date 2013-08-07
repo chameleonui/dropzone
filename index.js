@@ -128,7 +128,7 @@ Dropzone.prototype._onUploadProgress = function(event) {
 Dropzone.prototype._onUploadError = function(event) {
 	// this.updateState('error', {errorMsg: (this.xhrResponse === null) ? 'Error!' : this.xhrResponse.statusText });
 	this.updateState('error', {errorMsg: (this.xhrResponse === null) ? 'Error!' : (this.resJson.statusText === null) ? 'Error!' : this.resJson.statusText });
-	this.toggleState(this.options.classes.isError);
+	this.toggleState(this.options.classes.isError)._resetInputFile();
 
 	this.emit('uploadError');
 	return this;
@@ -143,7 +143,7 @@ Dropzone.prototype._onUploadEnd = function(res) {
 		if (this.resJson.status === 200) {
 			this.toggleState(this.options.classes.isSuccess);
 			setTimeout(function(){
-				_this.toggleState(_this.options.classes.isDefault);
+				_this.toggleState(_this.options.classes.isDefault)._resetInputFile();
 			}, 1000);
 			this.emit('uploadEnd');
 		} else {
@@ -175,7 +175,6 @@ Dropzone.prototype._uploadFiles = function() {
 
 		upload.on('end', function(res){
 			_this._onUploadEnd(res);
-			console.log(res);
 		});
 
 		upload.on('error', function(e){
@@ -184,6 +183,7 @@ Dropzone.prototype._uploadFiles = function() {
 	}
 
 	this.emit('uploadBegin');
+	return this;
 };
 
 Dropzone.prototype._inputOnChange = function() {
@@ -192,6 +192,8 @@ Dropzone.prototype._inputOnChange = function() {
 		e.preventDefault();
 		_this._uploadFiles();
 	});
+
+	return this;
 };
 
 Dropzone.prototype._inputOnDragover = function() {
@@ -200,6 +202,8 @@ Dropzone.prototype._inputOnDragover = function() {
 	    e.preventDefault();
 		_this.toggleState(_this.options.classes.isDragover);
 	});
+
+	return this;
 };
 
 Dropzone.prototype._inputOnDragleave = function() {
@@ -208,11 +212,24 @@ Dropzone.prototype._inputOnDragleave = function() {
 	    e.preventDefault();
 		_this.toggleState(_this.options.classes.isDefault);
 	});
+
+	return this;
 };
 
 Dropzone.prototype._onClickError = function() {
 	$('body').on('click', this.options.classes.dropzone+' > '+this.options.classes.error, this, function(e){
 		e.preventDefault();
-		e.data.toggleState(e.data.options.classes.isDefault);
+		e.data.toggleState(e.data.options.classes.isDefault)._resetInputFile();
 	});
+
+	return this;
 };
+
+Dropzone.prototype._resetInputFile = function() {
+	var $inputFileID = $(this._inputId);
+	$inputFileID.replaceWith( $inputFileID = $inputFileID.clone( true ) );
+
+	return this;
+};
+
+
