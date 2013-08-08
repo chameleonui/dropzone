@@ -5,6 +5,7 @@
 	<title>Dropzone test</title>
 	<style>
 		body {
+			font-family: Helvetica Neue, Helvetica, sans-serif;
 			padding: 2em;
 		}
 
@@ -45,6 +46,11 @@
 		.dropzone-progress {
 			border: 3px dashed yellow;
 		}
+		.dropzone-progress > .progress-bar{
+			background-color: yellow;
+			height: 10px;
+			width: 0%;
+		}
 		.dropzone-default {
 			border: 3px dashed gray;
 		}
@@ -70,7 +76,7 @@
 	<h1>Dropzone test</h1>
 
 	<ul class="gallery-grid">
-		<li class="gallery-item">block</li>
+		<li class="gallery-item">Block</li>
 	</ul>
 
 	
@@ -88,32 +94,56 @@
     	}
     	var drop = new Dropzone('.gallery-grid', dropOptions);
 
-    	var stateTemplatesVars = {
-			error: {errorMsg: 'Error msg!'},
-			success: {successMsg: 'Success!'}
+		// set dropzone templates by one and without variables values
+    	drop.templateState('success','<i class="icon-plus"></i><span>{{=it.successMsg}}</span>');
+		drop.templateState('error','{{=it.errorMsg}}');
+		
+		//set the values for templates
+		var stateTemplatesVars = {
+			'error': {
+				errorMsg: 'Error msg!'
+			},
+			'success': {
+				successMsg: 'Success!'
+			}
 		};
 
+		// show dropzone in DOM using variables
 		drop.show(stateTemplatesVars);
-    	drop.templateState('success','<i class="icon-plus"></i><span>{{=it.successMsg}}</span>', {successMsg: 'Success!'});
-		drop.templateState('error','{{=it.errorMsg}}', {errorMsg: 'Error msg!'});
-		
+
+		// update template on visible dropzone but you must set variables too
+		drop.templateState('error','<strong>{{=it.errorMsg}}</strong>', { errorMsg: 'Whopaaa!' });
+
+		// update multiple teplates in one function of course also with variables
+		drop.templateStates({
+			'success': {
+				template: '<strong>{{=it.successMsg}}</strong>', 
+				data: { successMsg: 'Yahoooo!' }
+			},
+			'progress': {
+				template: '<div class="progress-bar" style="width:{{=it.percent}}%;"></div>',
+				data: { percent: 0 }
+			}
+		}); 
 
 		drop.on('uploadBegin', function(){
 			// Do something on upload begin
+			console.log('Upload beginned');
 		});
 
 		drop.on('uploadProgress', function(){
 			// Do something on upload progress
+			console.log('Upload in progress');
 		});
 
 		drop.on('uploadError', function(e){
 			// Do something on upload error
-			// console.log(e);
+			console.log('Upload Error', e);
 		});
 
 		drop.on('uploadEnd', function(){
 			// Do something on upload end
-			// console.log(this.xhrResponse);
+			console.log('Upload Ended', this.xhrResponse);
 		});
 
 	</script>
