@@ -3,7 +3,7 @@
 - Fixed previous merge
 - Input file is now reseting
 - Test if I get ohter status than 200 in response from server
-- Error state is now changeable to default state on click
+- Error state is now reversible to default state on click
 
 ### 1.1.0
 
