@@ -7,21 +7,25 @@ Provides skinable UI component for files upload
 
 Install with [component](http://component.io):
 
-    $ component install chameleonui/dropzone
+```sh
+$ component install chameleonui/dropzone
+```
 
 ## API
 
+```js
 new Dropzone(element, options);
+```
 
 Dropzone has 4 major states:
+- default
 - progress
 - success
 - error
-- default
 
 and default state may have minor state isDragover enabled by CSS class.
 
-Default values and Dropzone options are:
+### Default values and Dropzone options are:
 
 ```js
 var options = {
@@ -44,7 +48,7 @@ var options = {
 };
 ```
 
-### Dropzone.show(stateTempaltesVars:object)
+### Dropzone.show(stateTempaltesVars:object)
 
 Build Dropzone templates and show Dropzone in DOM.
 
@@ -88,7 +92,7 @@ Updates state template using new data.
 
 ### Dropzone.toggleState(className:stringCssClass)
 
-Swith beetween states ba state name like e.g.'error'
+Swith beetween active state classes like e.g.'is-error'
 
 
 ## Author(s)
