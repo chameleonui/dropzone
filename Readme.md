@@ -1,4 +1,3 @@
-
 # Dropzone
 
 Provides skinable UI component for files upload
@@ -97,7 +96,7 @@ Swith beetween active state classes like e.g.'is-error'
 
 ## Author(s)
 
-Edgedesign s.r.o. – Dan Sitek, Tomas Kuba
+Edgedesign s.r.o. – [Daniel Sitek](https://github.com/danielsitek), [Tomáš Kuba](https://github.com/tomaskuba)
 
 ## License
 
