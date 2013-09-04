@@ -1,3 +1,7 @@
+### v1.3.0
+
+- Fixed reserved names
+
 ### 1.2.0
 
 - Fixed previous merge

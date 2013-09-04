@@ -95,15 +95,15 @@
     	var drop = new Dropzone('.gallery-grid', dropOptions);
 
 		// set dropzone templates by one and without variables values
-    	drop.templateState('success','<i class="icon-plus"></i><span>{{=it.successMsg}}</span>');
-		drop.templateState('error','{{=it.errorMsg}}');
+    	drop.templateState('successState','<i class="icon-plus"></i><span>{{=it.successMsg}}</span>');
+		drop.templateState('errorState','{{=it.errorMsg}}');
 		
 		//set the values for templates
 		var stateTemplatesVars = {
-			'error': {
+			'errorState': {
 				errorMsg: 'Error msg!'
 			},
-			'success': {
+			'successState': {
 				successMsg: 'Success!'
 			}
 		};
@@ -116,11 +116,11 @@
 
 		// update multiple teplates in one function of course also with variables
 		drop.templateStates({
-			'success': {
+			'successState': {
 				template: '<strong>{{=it.successMsg}}</strong>', 
 				data: { successMsg: 'Yahoooo!' }
 			},
-			'progress': {
+			'progressState': {
 				template: '<div class="progress-bar" style="width:{{=it.percent}}%;"></div>',
 				data: { percent: 0 }
 			}

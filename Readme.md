@@ -28,16 +28,16 @@ and default state may have minor state isDragover enabled by CSS class.
 
 ```js
 var options = {
-    template: "<li class='dropzone is-default'><div class='dropzone-default'><div class='dropzone-default-body'>{{=it.default}}</div><div class='dropzone-dragover-body'><i class='icon-plus'></i><div class='dropzone-icon-title'>Place items here</div></div><div class='dropzone-active-area'><input id='dropzone-fileupload' type='file' name='{{=it.inputName}}' {{=it.multiple}}></div></div><div class='dropzone-success'>{{=it.success}}</div><div class='dropzone-error'>{{=it.error}}</div><div class='dropzone-progress'>{{=it.progress}}</div></li>",
+    template: "<li class='dropzone is-default'><div class='dropzone-default'><div class='dropzone-default-body'>{{=it.defaultState}}</div><div class='dropzone-dragover-body'><i class='icon-plus'></i><div class='dropzone-icon-title'>Place items here</div></div><div class='dropzone-active-area'><input id='dropzone-fileupload' type='file' name='{{=it.inputName}}' {{=it.multiple}}></div></div><div class='dropzone-success'>{{=it.successState}}</div><a href='#' class='dropzone-error'>{{=it.errorState}}</a><div class='dropzone-progress'>{{=it.progressState}}</div></li>",
     renderMethod: 'prepend',
     uploadInputId: 'dropzone-fileupload',
     uploadUrl: null,
     classes: {
         dropzone: '.dropzone',
-        success: '.dropzone-success',
-        error: '.dropzone-error',
-        progress: '.dropzone-progress',
-        default: '.dropzone-default .dropzone-default-body',
+        successState: '.dropzone-success',
+        errorState: '.dropzone-error',
+        progressState: '.dropzone-progress',
+        defaultState: '.dropzone-default .dropzone-default-body',
         isSuccess: 'is-success',
         isError: 'is-error',
         isDragover: 'is-dragover',
@@ -69,11 +69,11 @@ Sets/updates multiple state templates:
 
 ```js
 drop.templateStates({
-    'success': {
+    'successState': {
         template: '<strong>{{=it.successMsg}}</strong>', 
         data: { successMsg: 'Yahoooo!' }
     },
-    'progress': {
+    'progressState': {
         template: '<div class="progress-bar" style="width:{{=it.percent}}%;"></div>',
         data: { percent: 0 }
     }
@@ -96,7 +96,7 @@ Swith beetween active state classes like e.g.'is-error'
 
 ## Author(s)
 
-Edgedesign s.r.o. – [Daniel Sitek](https://github.com/danielsitek), [Tomáš Kuba](https://github.com/tomaskuba)
+[Edgedesign s.r.o.](http://www.edgedesing.cz) – [Daniel Sitek](https://github.com/danielsitek), [Tomáš Kuba](https://github.com/tomaskuba)
 
 ## License
 
