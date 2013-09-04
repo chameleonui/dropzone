@@ -82,23 +82,17 @@
 	
 	<script src="build/build.js"></script>
 	<script>
-		var $ = require('jquery');
-    	var Dropzone = require('dropzone');
-
-    	var errors = {
-    		work: 'http://daidalos.apiary.io/image-block/image/upload'
-    	}
-
+		var Dropzone = require('dropzone');
     	var dropOptions = {
     		uploadUrl: 'http://daidalos.apiary.io/image-block/image/upload'
     	}
     	var drop = new Dropzone('.gallery-grid', dropOptions);
 
 		// set dropzone templates by one and without variables values
-    	drop.templateState('successState','<i class="icon-plus"></i><span>{{=it.successMsg}}</span>');
+        drop.templateState('successState','<i class="icon-plus"></i><span>{{=it.successMsg}}</span>');
 		drop.templateState('errorState','{{=it.errorMsg}}');
 		
-		//set the values for templates
+		// set the values for templates
 		var stateTemplatesVars = {
 			'errorState': {
 				errorMsg: 'Error msg!'
@@ -107,12 +101,12 @@
 				successMsg: 'Success!'
 			}
 		};
-
+		
 		// show dropzone in DOM using variables
 		drop.show(stateTemplatesVars);
 
 		// update template on visible dropzone but you must set variables too
-		drop.templateState('error','<strong>{{=it.errorMsg}}</strong>', { errorMsg: 'Whopaaa!' });
+		drop.templateState('defaultState','<strong>{{=it.defaultMsg}}</strong>', { defaultMsg: 'Ola!' });
 
 		// update multiple teplates in one function of course also with variables
 		drop.templateStates({
@@ -124,7 +118,12 @@
 				template: '<div class="progress-bar" style="width:{{=it.percent}}%;"></div>',
 				data: { percent: 0 }
 			}
-		}); 
+		});
+
+
+		//
+		// Emitted events
+		//
 
 		drop.on('uploadBegin', function(){
 			// Do something on upload begin

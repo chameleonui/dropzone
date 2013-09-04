@@ -47,6 +47,33 @@ var options = {
 };
 ```
 
+### Back-end API
+
+```
+POST /image/upload
+< 200
+< Content-Type: application/json
+{
+    "status": 200,
+    "statusText": "OK",
+    "image":
+        {
+            "delete_url": "/image/delete/55fb4e69-a81b-4263-a117-a37b1a8bc33a",
+            "edit_url": "/image/edit/55fb4e69-a81b-4263-a117-a37b1a8bc33a",
+            "description": "There is a Hypno Toad",
+            "filename": "toad.jpg",
+            "id": "55fb4e69-a81b-4263-a117-a37b1a8bc33a",
+            "mimetype": "image/jpg",
+            "size": 150703,
+            "title": "The Hypno Toad",
+            "url": "images/toad.jpg",
+            "url_thumbnail":"images/thumb/toad.jpg"
+        }
+}
+```
+
+## Functions
+
 ### Dropzone.show(stateTempaltesVars:object)
 
 Build Dropzone templates and show Dropzone in DOM.
