@@ -1,6 +1,8 @@
 ### v1.3.0
 
 - Fixed reserved names
+- Added back-end api json
+- JSLinted a index.js file a bit
 
 ### 1.2.0
 
