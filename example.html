@@ -91,7 +91,7 @@
 		<div class="dropzone-placeholder js-second-dropzone-holder">
 			
 		</div>
-		<ul>
+		<ul class="js-second-list">
 			<li>item</li>
 		</ul>
 	</div>
@@ -163,16 +163,18 @@
 			console.log('Upload Ended', this.xhrResponse);
 		});
 
+		// ================================================================================
 		// DROPZONE 2
 
 		var dropSecond = new Dropzone('.js-second-dropzone-holder', {
 			uploadUrl: 'http://daidalos.apiary.io/image-block/image/upload',
-			uploadInputId: 'dropzone2-fileupload'
+			// renderMethod: 'before', 
+			tokens: {
+		        // tokenInstanceId: 'booooo',
+		        // tokenInputName: '',
+		        // tokenInputMultiple: 'multiple'
+		    }
 		});
-		dropSecond.templateState('successState','<i class="icon-plus"></i><span>{{=it.successMsg}}</span>');
-		dropSecond.templateState('errorState','{{=it.errorMsg}}');
-		
-		// set the values for templates
 		var stateTemplatesVars2 = {
 			'errorState': {
 				errorMsg: 'Error msg!'
@@ -181,6 +183,10 @@
 				successMsg: 'Success!'
 			}
 		};
+		dropSecond.templateState('successState','<i class="icon-plus"></i><span>{{=it.successMsg}}</span>');
+		dropSecond.templateState('errorState','{{=it.errorMsg}}');
+		
+		// set the values for templates
 		
 		// show dropzone in DOM using variables
 		dropSecond.show(stateTemplatesVars2);

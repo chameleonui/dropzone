@@ -6,10 +6,15 @@ var inherit = require('inherit');
 var Upload = require('upload');
 
 var defaults = {
-    template: "<li class='dropzone is-default'><div class='dropzone-default'><div class='dropzone-default-body'>{{=it.defaultState}}</div><div class='dropzone-dragover-body'><i class='icon-plus'></i><div class='dropzone-icon-title'>Place items here</div></div><div class='dropzone-active-area'><input id='dropzone-fileupload' type='file' name='{{=it.inputName}}' {{=it.multiple}}></div></div><div class='dropzone-success'>{{=it.successState}}</div><a href='#' class='dropzone-error'>{{=it.errorState}}</a><div class='dropzone-progress'>{{=it.progressState}}</div></li>",
+    template: "<li class='dropzone is-default' id='token_InstanceId'><div class='dropzone-default'><div class='dropzone-default-body'>{{=it.defaultState}}</div><div class='dropzone-dragover-body'>{{=it.dragoverState}}</div><div class='dropzone-active-area'><input id='token_UploadInputId' type='file' name='token_UploadInputName' token_Multiple></div></div><div class='dropzone-success'>{{=it.successState}}</div><a href='#' class='dropzone-error'>{{=it.errorState}}</a><div class='dropzone-progress'>{{=it.progressState}}</div></li>",
     renderMethod: 'prepend',
     uploadInputId: 'dropzone-fileupload',
     uploadUrl: null,
+    tokens: {
+        tokenInstanceId: '',
+        tokenInputName: 'input-upload',
+        tokenInputMultiple: ''
+    },
     classes: {
         dropzone: '.dropzone',
         successState: '.dropzone-success',
@@ -30,13 +35,21 @@ function Dropzone(element, options) {
     for (i in defaults) { if (!(this.options[i])) { this.options[i] = defaults[i]; } }
 
     Emitter.call(this);
+    this.instanceId = this.options.tokens.tokenInstanceId || this._randomID();
+    this.dropzoneId = this.instanceId;
+    this.dropzoneInputId = 'input_' + this.instanceId;
+    this.dropzoneInputName = this.options.tokens.tokenInputName || defaults.tokens.tokenInputName;
+    this.dropzoneInputMultiple = this.options.tokens.tokenInputMultiple || defaults.tokens.tokenInputMultiple;
+
+    this.options.template = this._tokenizer(this.options.template);
     this._element = element;
     this._$element = $(this._element);
     this._input = null;
-    this._inputId = '#' + this.options.uploadInputId;
+    this._inputId = '#' + this.dropzoneInputId;
     this._images = null;
     this.xhrResponse = null;
     this.resJson = null;
+    this.count = 1;
 
     this._isVisible = false;
     this._template = null;
@@ -45,12 +58,15 @@ function Dropzone(element, options) {
         errorState: function() { return '<span>Error!</span>'; },
         progressState: function() { return '<span>Progress</span>'; },
         defaultState: function() { return '<span>Default</span>'; },
-        multiple: function() { return 'multiple'; },
-        inputName: function() { return 'inputName'; }
+        dragoverState: function() { return '<span>Place items here</span>'; }
     };
+
+    // console.log(this._tokenizer(this.options.template));
 
     this.template();
     this._onClickError();
+
+    console.log(this);
 }
 
 module.exports = Dropzone;
@@ -77,7 +93,14 @@ Dropzone.prototype.show = function(stateTemplatesVars) {
 };
 
 Dropzone.prototype.hide = function() {
-    this._$element.children(this.options.classes.dropzone).remove();
+    
+    // Vanilla JS way
+    var dropEl = document.querySelector('#' + this.dropzoneId);
+    dropEl.parentNode.removeChild(dropEl);
+
+    // jQuery way
+    // $('#' + this.dropzoneId).remove();
+    
     this._isVisible = false;
     this.emit('hide');
     return this;
@@ -127,15 +150,13 @@ Dropzone.prototype.templateState = function(name, template, data) {
 
 Dropzone.prototype.updateState = function(name, data) {
     if (this._isVisible) {
-        this._$element.children(this.options.classes.dropzone)
-        .find(this.options.classes[name]).html(this._stateTemplates[name](data));
+        $('#' + this.dropzoneId).find(this.options.classes[name]).html(this._stateTemplates[name](data));
     }
     return this._stateTemplates[name](data);
 };
 
 Dropzone.prototype.toggleState = function(className) {
-    this._$element.children(this.options.classes.dropzone)
-    .attr('class', this.options.classes.dropzone.replace('.', '') + ' ' + className.replace('.', ''));
+    $('#' + this.dropzoneId).attr('class', this.options.classes.dropzone.replace('.', '') + ' ' + className.replace('.', ''));
     return this;
 };
 
@@ -184,7 +205,8 @@ Dropzone.prototype._onUploadEnd = function(res) {
 
 Dropzone.prototype._uploadFiles = function() {
     var _this = this, i, file, upload;
-    this._input = document.querySelector('#' + this.options.uploadInputId);
+    this._input = document.querySelector('#' + this.dropzoneInputId);
+    // console.log(this._input);
 
     for (i = 0; i < this._input.files.length; ++i) {
 
@@ -240,7 +262,7 @@ Dropzone.prototype._inputOnDragleave = function() {
 };
 
 Dropzone.prototype._onClickError = function() {
-    $('body').on('click', this.options.classes.dropzone + ' > ' + this.options.classes.errorState, this, function(e) {
+    $('body').on('click', '#' + this.dropzoneId + ' > ' + this.options.classes.errorState, this, function(e) {
         e.preventDefault();
         e.data.toggleState(e.data.options.classes.isDefault)._resetInputFile();
     });
@@ -255,3 +277,25 @@ Dropzone.prototype._resetInputFile = function() {
 
     return this;
 };
+
+Dropzone.prototype._randomID = function() {
+    return Math.random().toString(36).slice(2);
+};
+
+Dropzone.prototype._tokenizer = function(htmlTemplate) {
+    var _this = this;
+    var tokenMap = [
+        { "find": "token_InstanceId",       "replaceBy" : this.dropzoneId },
+        { "find": "token_UploadInputId",    "replaceBy" : this.dropzoneInputId },
+        { "find": "token_UploadInputName",  "replaceBy" : this.dropzoneInputName },
+        { "find": "token_Multiple",         "replaceBy" : this.dropzoneInputMultiple }
+    ];
+
+    for (var i = tokenMap.length - 1; i >= 0; i--) {
+        htmlTemplate = htmlTemplate.replace(new RegExp(tokenMap[i].find, 'g'), tokenMap[i].replaceBy);
+    };
+
+    return htmlTemplate;
+};
+
+
