@@ -184,7 +184,7 @@ Dropzone.prototype._onUploadEnd = function(res) {
 
 Dropzone.prototype._uploadFiles = function() {
     var _this = this, i, file, upload;
-    this._input = document.getElementById(this.options.uploadInputId);
+    this._input = document.querySelector('#' + this.options.uploadInputId);
 
     for (i = 0; i < this._input.files.length; ++i) {
 

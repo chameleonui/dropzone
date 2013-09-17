@@ -69,22 +69,40 @@
 		.dropzone.is-progress .dropzone-progress {
 			display: block;
 		}
+
+		.page-section {
+			display: block;
+			clear: both;
+			margin-bottom: 24px;
+		}
 	</style>
 </head>
 <body>
 
 	<h1>Dropzone test</h1>
+	
+	<div class="page-section">
+		<ul class="gallery-grid">
+			<li class="gallery-item">Block</li>
+		</ul>
+	</div>
 
-	<ul class="gallery-grid">
-		<li class="gallery-item">Block</li>
-	</ul>
+	<div class="page-section">
+		<div class="dropzone-placeholder js-second-dropzone-holder">
+			
+		</div>
+		<ul>
+			<li>item</li>
+		</ul>
+	</div>
 
 	
 	<script src="build/build.js"></script>
 	<script>
 		var Dropzone = require('dropzone');
     	var dropOptions = {
-    		uploadUrl: 'http://daidalos.apiary.io/image-block/image/upload'
+    		uploadUrl: 'http://daidalos.apiary.io/image-block/image/upload',
+    		uploadInputId: 'dropzone-fileupload'
     	}
     	var drop = new Dropzone('.gallery-grid', dropOptions);
 
@@ -143,6 +161,43 @@
 		drop.on('uploadEnd', function(){
 			// Do something on upload end
 			console.log('Upload Ended', this.xhrResponse);
+		});
+
+		// DROPZONE 2
+
+		var dropSecond = new Dropzone('.js-second-dropzone-holder', {
+			uploadUrl: 'http://daidalos.apiary.io/image-block/image/upload',
+			uploadInputId: 'dropzone2-fileupload'
+		});
+		dropSecond.templateState('successState','<i class="icon-plus"></i><span>{{=it.successMsg}}</span>');
+		dropSecond.templateState('errorState','{{=it.errorMsg}}');
+		
+		// set the values for templates
+		var stateTemplatesVars2 = {
+			'errorState': {
+				errorMsg: 'Error msg!'
+			},
+			'successState': {
+				successMsg: 'Success!'
+			}
+		};
+		
+		// show dropzone in DOM using variables
+		dropSecond.show(stateTemplatesVars2);
+
+		// update template on visible dropzone but you must set variables too
+		dropSecond.templateState('defaultState','<strong>{{=it.defaultMsg}}</strong>', { defaultMsg: 'Ola!' });
+
+		// update multiple teplates in one function of course also with variables
+		dropSecond.templateStates({
+			'successState': {
+				template: '<strong>{{=it.successMsg}}</strong>', 
+				data: { successMsg: 'Yahoooo!' }
+			},
+			'progressState': {
+				template: '<div class="progress-bar" style="width:{{=it.percent}}%;"></div>',
+				data: { percent: 0 }
+			}
 		});
 
 	</script>
