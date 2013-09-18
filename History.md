@@ -1,3 +1,8 @@
+### v2.0.0
+
+- Highly refactored js
+- Dropzone can now run multiple instances on one page
+
 ### v1.3.0
 
 - Fixed reserved names

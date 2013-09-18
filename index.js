@@ -4,17 +4,15 @@ var dot = require('doT');
 var Emitter = require('emitter');
 var inherit = require('inherit');
 var Upload = require('upload');
+var indexOf = require('indexof');
 
 var defaults = {
-    template: "<li class='dropzone is-default' id='token_InstanceId'><div class='dropzone-default'><div class='dropzone-default-body'>{{=it.defaultState}}</div><div class='dropzone-dragover-body'>{{=it.dragoverState}}</div><div class='dropzone-active-area'><input id='token_UploadInputId' type='file' name='token_UploadInputName' token_Multiple></div></div><div class='dropzone-success'>{{=it.successState}}</div><a href='#' class='dropzone-error'>{{=it.errorState}}</a><div class='dropzone-progress'>{{=it.progressState}}</div></li>",
+    template: '<li class="dropzone is-default" id="token_InstanceId"><div class="dropzone-default"><div class="dropzone-default-body">{{=it.defaultState}}</div><div class="dropzone-dragover-body">{{=it.dragoverState}}</div><div class="dropzone-active-area"><input id="token_UploadInputId" type="file" name="token_UploadInputName" token_Multiple></div></div><div class="dropzone-success">{{=it.successState}}</div><a href="#" class="dropzone-error">{{=it.errorState}}</a><div class="dropzone-progress">{{=it.progressState}}</div></li>',
     renderMethod: 'prepend',
-    uploadInputId: 'dropzone-fileupload',
-    uploadUrl: null,
-    tokens: {
-        tokenInstanceId: '',
-        tokenInputName: 'input-upload',
-        tokenInputMultiple: ''
-    },
+    inputUploadUrl: null,
+    inputName: 'input-upload',
+    inputMultiple: '',
+    allowedFileTypes : [],
     classes: {
         dropzone: '.dropzone',
         successState: '.dropzone-success',
@@ -35,13 +33,14 @@ function Dropzone(element, options) {
     for (i in defaults) { if (!(this.options[i])) { this.options[i] = defaults[i]; } }
 
     Emitter.call(this);
-    this.instanceId = this.options.tokens.tokenInstanceId || this._randomID();
+    this.instanceId = this._randomID(); // Generate id for single dropzone instance and it's elements
     this.dropzoneId = this.instanceId;
     this.dropzoneInputId = 'input_' + this.instanceId;
-    this.dropzoneInputName = this.options.tokens.tokenInputName || defaults.tokens.tokenInputName;
-    this.dropzoneInputMultiple = this.options.tokens.tokenInputMultiple || defaults.tokens.tokenInputMultiple;
+    this.dropzoneInputName = this.options.inputName;
+    this.dropzoneInputMultiple = this.options.inputMultiple;
 
-    this.options.template = this._tokenizer(this.options.template);
+    this.options.template = this._tokenizer(this.options.template); // include tokens into template and return it back to template
+    this.tokenizedTemplate = this.options.template;
     this._element = element;
     this._$element = $(this._element);
     this._input = null;
@@ -49,10 +48,9 @@ function Dropzone(element, options) {
     this._images = null;
     this.xhrResponse = null;
     this.resJson = null;
-    this.count = 1;
-
     this._isVisible = false;
     this._template = null;
+
     this._stateTemplates = {
         successState: function() { return '<span>Success</span>'; },
         errorState: function() { return '<span>Error!</span>'; },
@@ -93,14 +91,14 @@ Dropzone.prototype.show = function(stateTemplatesVars) {
 };
 
 Dropzone.prototype.hide = function() {
-    
+
     // Vanilla JS way
     var dropEl = document.querySelector('#' + this.dropzoneId);
     dropEl.parentNode.removeChild(dropEl);
 
     // jQuery way
     // $('#' + this.dropzoneId).remove();
-    
+
     this._isVisible = false;
     this.emit('hide');
     return this;
@@ -206,32 +204,49 @@ Dropzone.prototype._onUploadEnd = function(res) {
 Dropzone.prototype._uploadFiles = function() {
     var _this = this, i, file, upload;
     this._input = document.querySelector('#' + this.dropzoneInputId);
-    // console.log(this._input);
 
-    for (i = 0; i < this._input.files.length; ++i) {
+    if (this.options.inputUploadUrl === null) {
+        throw new Error('inputUploadUrl must not be null! You have to set it in options');
+    }
+    
+    for (var i = this._input.files.length - 1; i >= 0; i--) {
+    // for (i = 0; i < this._input.files.length; i++) {
 
         file = this._input.files[i];
 
-        upload = new Upload(file);
-        upload.to(this.options.uploadUrl, function(e) {
-            _this._onUploadError(e);
-        });
-
-        upload.on('progress', function(e) {
-            _this._onUploadProgress(e);
-        });
-
-        upload.on('end', function(res) {
-            _this._onUploadEnd(res);
-        });
-
-       upload.on('error', function(e) {
-            _this._onUploadError(e);
-        });
+        if (this.options.allowedFileTypes.length > 0) {
+            if (indexOf(this.options.allowedFileTypes, file.type) >= 0 ) {
+                console.log(file);
+                this._uploadObject(file);
+            }
+        } else {
+            throw new Error('allowedFileTypes is not defined');
+        }
     }
 
     this.emit('uploadBegin');
     return this;
+};
+
+Dropzone.prototype._uploadObject = function(file) {
+    var _this = this, upload;
+
+    upload = new Upload(file);
+    upload.to(this.options.inputUploadUrl, function(e) {
+        _this._onUploadError(e);
+    });
+
+    upload.on('progress', function(e) {
+        _this._onUploadProgress(e);
+    });
+
+    upload.on('end', function(res) {
+        _this._onUploadEnd(res);
+    });
+
+    upload.on('error', function(e) {
+        _this._onUploadError(e);
+    });
 };
 
 Dropzone.prototype._inputOnChange = function() {
@@ -283,7 +298,6 @@ Dropzone.prototype._randomID = function() {
 };
 
 Dropzone.prototype._tokenizer = function(htmlTemplate) {
-    var _this = this;
     var tokenMap = [
         { "find": "token_InstanceId",       "replaceBy" : this.dropzoneId },
         { "find": "token_UploadInputId",    "replaceBy" : this.dropzoneInputId },

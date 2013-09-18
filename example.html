@@ -54,8 +54,10 @@
 		.dropzone-default {
 			border: 3px dashed gray;
 		}
-		.dropzone-dragover {
-			border: 3px dashed blue;
+		.dropzone-default > .dropzone-default-body,
+		.dropzone-default > .dropzone-dragover-body {
+			display: block;
+			height: 
 		}
 		.dropzone-success,
 		.dropzone-error,
@@ -101,8 +103,7 @@
 	<script>
 		var Dropzone = require('dropzone');
     	var dropOptions = {
-    		uploadUrl: 'http://daidalos.apiary.io/image-block/image/upload',
-    		uploadInputId: 'dropzone-fileupload'
+    		inputUploadUrl: 'http://daidalos.apiary.io/image-block/image/upload',
     	}
     	var drop = new Dropzone('.gallery-grid', dropOptions);
 
@@ -163,17 +164,14 @@
 			console.log('Upload Ended', this.xhrResponse);
 		});
 
-		// ================================================================================
+		// ===============================================================
 		// DROPZONE 2
 
 		var dropSecond = new Dropzone('.js-second-dropzone-holder', {
-			uploadUrl: 'http://daidalos.apiary.io/image-block/image/upload',
-			// renderMethod: 'before', 
-			tokens: {
-		        // tokenInstanceId: 'booooo',
-		        // tokenInputName: '',
-		        // tokenInputMultiple: 'multiple'
-		    }
+			inputUploadUrl: 'http://daidalos.apiary.io/image-block/image/upload',
+    		inputName: 'pekabooo',
+    		inputMultiple: 'multiple',
+    		allowedFileTypes: ['image/jpeg']
 		});
 		var stateTemplatesVars2 = {
 			'errorState': {
@@ -192,7 +190,7 @@
 		dropSecond.show(stateTemplatesVars2);
 
 		// update template on visible dropzone but you must set variables too
-		dropSecond.templateState('defaultState','<strong>{{=it.defaultMsg}}</strong>', { defaultMsg: 'Ola!' });
+		dropSecond.templateState('defaultState','<strong>{{=it.defaultMsg}}</strong>', { defaultMsg: 'Hombres!' });
 
 		// update multiple teplates in one function of course also with variables
 		dropSecond.templateStates({

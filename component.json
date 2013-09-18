@@ -9,7 +9,8 @@
     "component/emitter": "*",
     "component/inherit": "*",
     "cayasso/doT": "*",
-    "component/upload": "*"
+    "component/upload": "*",
+    "chameleonui/indexof": "*"
   },
   "development": {},
   "license": "MIT",
