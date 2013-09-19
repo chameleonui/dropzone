@@ -92,7 +92,7 @@ Dropzone.prototype.show = function(stateTemplatesVars) {
 Dropzone.prototype.hide = function() {
 
     // Vanilla JS way
-    var dropEl = document.querySelector('#' + this.dropzoneId);
+    var dropEl = document.getElementById(this.dropzoneId);
     dropEl.parentNode.removeChild(dropEl);
 
     // jQuery way
@@ -158,8 +158,10 @@ Dropzone.prototype.toggleState = function(className) {
     
     // the Vanilla JS way
     var dropzoneId = document.getElementById(this.dropzoneId);
-    dropzoneId.removeAttribute('class');
-    dropzoneId.setAttribute('class', this.options.classes.dropzone.replace('.', '') + ' ' + className.replace('.', ''));
+    if (dropzoneId) {
+        dropzoneId.removeAttribute('class');
+        dropzoneId.setAttribute('class', this.options.classes.dropzone.replace('.', '') + ' ' + className.replace('.', ''));
+    }
     return this;
 };
 
