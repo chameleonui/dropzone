@@ -8,6 +8,7 @@
 * Refactored object Options
 * added optional setting `allowedFileTypes` to Options
 * xhr from uploaded files are stored also in `xhrResponseArray` array, since uploading another file/files on same Dropzone instance
+* updated Readme.md
 
 
 ---
