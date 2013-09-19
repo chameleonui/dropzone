@@ -4,12 +4,15 @@ var dot = require('doT');
 var Emitter = require('emitter');
 var inherit = require('inherit');
 var Upload = require('upload');
+var indexOf = require('indexof');
 
 var defaults = {
-    template: "<li class='dropzone is-default'><div class='dropzone-default'><div class='dropzone-default-body'>{{=it.defaultState}}</div><div class='dropzone-dragover-body'><i class='icon-plus'></i><div class='dropzone-icon-title'>Place items here</div></div><div class='dropzone-active-area'><input id='dropzone-fileupload' type='file' name='{{=it.inputName}}' {{=it.multiple}}></div></div><div class='dropzone-success'>{{=it.successState}}</div><a href='#' class='dropzone-error'>{{=it.errorState}}</a><div class='dropzone-progress'>{{=it.progressState}}</div></li>",
     renderMethod: 'prepend',
-    uploadInputId: 'dropzone-fileupload',
-    uploadUrl: null,
+    inputUploadUrl: null,
+    inputName: 'input-upload',
+    inputMultiple: '',
+    allowedFileTypes : [],
+    template: '<li class="dropzone is-default" id="token_InstanceId"><div class="dropzone-default"><div class="dropzone-default-body">{{=it.defaultState}}</div><div class="dropzone-dragover-body">{{=it.dragoverState}}</div><div class="dropzone-active-area"><input id="token_UploadInputId" type="file" name="token_UploadInputName" token_Multiple></div></div><div class="dropzone-success">{{=it.successState}}</div><a href="#" class="dropzone-error">{{=it.errorState}}</a><div class="dropzone-progress">{{=it.progressState}}</div></li>',
     classes: {
         dropzone: '.dropzone',
         successState: '.dropzone-success',
@@ -30,23 +33,33 @@ function Dropzone(element, options) {
     for (i in defaults) { if (!(this.options[i])) { this.options[i] = defaults[i]; } }
 
     Emitter.call(this);
+
+    this.instanceId = this._randomID(); // Generate id for single dropzone instance and it's elements
+    this.dropzoneId = this.instanceId;
+    this.dropzoneInputId = 'input_' + this.instanceId;
+    this.dropzoneInputName = this.options.inputName;
+    this.dropzoneInputMultiple = this.options.inputMultiple;
+
+    this._errorCheck(this.instanceId); // checkt for some predictable errors
+
+    this.options.template = this._tokenizer(this.options.template); // include tokens into template and return it back to template
+    this.tokenizedTemplate = this.options.template;
     this._element = element;
     this._$element = $(this._element);
-    this._input = null;
-    this._inputId = '#' + this.options.uploadInputId;
+    this._inputId = '#' + this.dropzoneInputId;
     this._images = null;
     this.xhrResponse = null;
+    this.xhrResponseArray = [];
     this.resJson = null;
-
     this._isVisible = false;
     this._template = null;
+
     this._stateTemplates = {
         successState: function() { return '<span>Success</span>'; },
         errorState: function() { return '<span>Error!</span>'; },
         progressState: function() { return '<span>Progress</span>'; },
         defaultState: function() { return '<span>Default</span>'; },
-        multiple: function() { return 'multiple'; },
-        inputName: function() { return 'inputName'; }
+        dragoverState: function() { return '<span>Place items here</span>'; }
     };
 
     this.template();
@@ -77,7 +90,14 @@ Dropzone.prototype.show = function(stateTemplatesVars) {
 };
 
 Dropzone.prototype.hide = function() {
-    this._$element.children(this.options.classes.dropzone).remove();
+
+    // Vanilla JS way
+    var dropEl = document.querySelector('#' + this.dropzoneId);
+    dropEl.parentNode.removeChild(dropEl);
+
+    // jQuery way
+    // $('#' + this.dropzoneId).remove();
+
     this._isVisible = false;
     this.emit('hide');
     return this;
@@ -127,16 +147,35 @@ Dropzone.prototype.templateState = function(name, template, data) {
 
 Dropzone.prototype.updateState = function(name, data) {
     if (this._isVisible) {
-        this._$element.children(this.options.classes.dropzone)
-        .find(this.options.classes[name]).html(this._stateTemplates[name](data));
+        $('#' + this.dropzoneId).find(this.options.classes[name]).html(this._stateTemplates[name](data));
     }
     return this._stateTemplates[name](data);
 };
 
 Dropzone.prototype.toggleState = function(className) {
-    this._$element.children(this.options.classes.dropzone)
-    .attr('class', this.options.classes.dropzone.replace('.', '') + ' ' + className.replace('.', ''));
+    // the jQuery way
+    // $('#' + this.dropzoneId).attr('class', this.options.classes.dropzone.replace('.', '') + ' ' + className.replace('.', ''));
+    
+    // the Vanilla JS way
+    var dropzoneId = document.getElementById(this.dropzoneId);
+    dropzoneId.removeAttribute('class');
+    dropzoneId.setAttribute('class', this.options.classes.dropzone.replace('.', '') + ' ' + className.replace('.', ''));
     return this;
+};
+
+Dropzone.prototype._tokenizer = function(htmlTemplate) {
+    var tokenMap = [
+        { "find": "token_InstanceId",       "replaceBy" : this.dropzoneId },
+        { "find": "token_UploadInputId",    "replaceBy" : this.dropzoneInputId },
+        { "find": "token_UploadInputName",  "replaceBy" : this.dropzoneInputName },
+        { "find": "token_Multiple",         "replaceBy" : this.dropzoneInputMultiple }
+    ];
+
+    for (var i = tokenMap.length - 1; i >= 0; i--) {
+        htmlTemplate = htmlTemplate.replace(new RegExp(tokenMap[i].find, 'g'), tokenMap[i].replaceBy);
+    };
+
+    return htmlTemplate;
 };
 
 // -------------------
@@ -151,7 +190,7 @@ Dropzone.prototype._onUploadProgress = function(event) {
     return this;
 };
 
-Dropzone.prototype._onUploadError = function() {
+Dropzone.prototype._onUploadError = function(event) {
     this.updateState('errorState', {errorMsg: (this.xhrResponse === null) ? 'Error!' : (this.resJson.statusText === null) ? 'Error!' : this.resJson.statusText });
     this.toggleState(this.options.classes.isError)._resetInputFile();
 
@@ -167,6 +206,7 @@ Dropzone.prototype._onUploadEnd = function(res) {
         // test if I get error status in response msg
         this.resJson = JSON.parse(this.xhrResponse.response);
         if (this.resJson.status === 200) {
+            this.xhrResponseArray.push(this.resJson);
             this.toggleState(this.options.classes.isSuccess);
             setTimeout(function() {
                 _this.toggleState(_this.options.classes.isDefault)._resetInputFile();
@@ -183,34 +223,66 @@ Dropzone.prototype._onUploadEnd = function(res) {
 };
 
 Dropzone.prototype._uploadFiles = function() {
-    var _this = this, i, file, upload;
-    this._input = document.getElementById(this.options.uploadInputId);
+    var _this = this, i, file;
+    var denied = [];
+    var uploadInput = document.getElementById(this.dropzoneInputId);
+    // this._input = document.querySelector('#' + this.dropzoneInputId);
+    this.xhrResponseArray = [];
 
-    for (i = 0; i < this._input.files.length; ++i) {
+    for (var i = uploadInput.files.length - 1; i >= 0; i--) {
 
-        file = this._input.files[i];
+        file = uploadInput.files[i];
 
-        upload = new Upload(file);
-        upload.to(this.options.uploadUrl, function(e) {
-            _this._onUploadError(e);
-        });
+        // checkt if i have set allowedFileTypes
+        if (this.options.allowedFileTypes.length > 0) {
+            // and if so, checkt if files droper for input are eligible to upload
+            if (indexOf(this.options.allowedFileTypes, file.type) >= 0 ) {
+                this._uploadObject(file);
+            } else {
+                // in case i wan to store names of denied files
+                denied.push(file.name);
+            }
+        } else {
+            this._uploadObject(file);
+        }
+    }
 
-        upload.on('progress', function(e) {
-            _this._onUploadProgress(e);
-        });
+    // in case i wan to show stored denied files
+    if (denied.length > 0) {
+        // fixed when draging not allowed file over dropone to change it's state back to default
+        this.toggleState(this.options.classes.isDefault)._resetInputFile();
 
-        upload.on('end', function(res) {
-            _this._onUploadEnd(res);
-        });
-
-       upload.on('error', function(e) {
-            _this._onUploadError(e);
-        });
+        // var deniedLog = denied.slice(', ');
+        // deniedLog = deniedLog.toString();
+        // console.log(deniedLog);
     }
 
     this.emit('uploadBegin');
     return this;
 };
+
+Dropzone.prototype._uploadObject = function(file) {
+    var _this = this, upload;
+
+    upload = new Upload(file);
+    upload.to(this.options.inputUploadUrl);
+
+    upload.on('progress', function(e) {
+        _this._onUploadProgress(e);
+    });
+
+    upload.on('end', function(res) {
+        _this._onUploadEnd(res);
+    });
+
+    upload.on('error', function(e) {
+        _this._onUploadError(e);
+    });
+};
+
+// -------------------
+// Event functions
+// -------------------
 
 Dropzone.prototype._inputOnChange = function() {
     var _this = this;
@@ -223,8 +295,8 @@ Dropzone.prototype._inputOnChange = function() {
 
 Dropzone.prototype._inputOnDragover = function() {
     var _this = this;
-    $(this._inputId).on('dragover', function(e) {
-        e.preventDefault();
+    $(this._inputId).on('dragenter', function(e) {
+        // e.preventDefault();
         _this.toggleState(_this.options.classes.isDragover);
     });
     return this;
@@ -233,14 +305,18 @@ Dropzone.prototype._inputOnDragover = function() {
 Dropzone.prototype._inputOnDragleave = function() {
     var _this = this;
     $(this._inputId).on('dragleave', function(e) {
-        e.preventDefault();
+        // e.preventDefault();
         _this.toggleState(_this.options.classes.isDefault);
     });
     return this;
 };
 
+// -------------------
+// Other functions
+// -------------------
+
 Dropzone.prototype._onClickError = function() {
-    $('body').on('click', this.options.classes.dropzone + ' > ' + this.options.classes.errorState, this, function(e) {
+    $('body').on('click', '#' + this.dropzoneId + ' > ' + this.options.classes.errorState, this, function(e) {
         e.preventDefault();
         e.data.toggleState(e.data.options.classes.isDefault)._resetInputFile();
     });
@@ -255,3 +331,17 @@ Dropzone.prototype._resetInputFile = function() {
 
     return this;
 };
+
+Dropzone.prototype._randomID = function() {
+    return Math.random().toString(36).slice(2);
+};
+
+// error check for typical predictable errors
+Dropzone.prototype._errorCheck = function(instanceId) {
+    var instance = 'Object Dropzone ID:' + instanceId + ': ';
+    if (this.options.inputUploadUrl === null) {
+        return console.error(instance + 'inputUploadUrl must not be null! You have to set it in options');
+    }
+};
+
+

@@ -16,6 +16,9 @@ $ component install chameleonui/dropzone
 new Dropzone(element, options);
 ```
 
+element - selector of element where should be dropzone placed
+option - definable options
+
 Dropzone has 4 major states:
 - default
 - progress
@@ -28,26 +31,29 @@ and default state may have minor state isDragover enabled by CSS class.
 
 ```js
 var options = {
-    template: "<li class='dropzone is-default'><div class='dropzone-default'><div class='dropzone-default-body'>{{=it.defaultState}}</div><div class='dropzone-dragover-body'><i class='icon-plus'></i><div class='dropzone-icon-title'>Place items here</div></div><div class='dropzone-active-area'><input id='dropzone-fileupload' type='file' name='{{=it.inputName}}' {{=it.multiple}}></div></div><div class='dropzone-success'>{{=it.successState}}</div><a href='#' class='dropzone-error'>{{=it.errorState}}</a><div class='dropzone-progress'>{{=it.progressState}}</div></li>",
-    renderMethod: 'prepend',
-    uploadInputId: 'dropzone-fileupload',
-    uploadUrl: null,
-    classes: {
-        dropzone: '.dropzone',
-        successState: '.dropzone-success',
-        errorState: '.dropzone-error',
-        progressState: '.dropzone-progress',
-        defaultState: '.dropzone-default .dropzone-default-body',
-        isSuccess: 'is-success',
-        isError: 'is-error',
-        isDragover: 'is-dragover',
-        isProgress: 'is-progress',
-        isDefault: 'is-default'
-    }
+    renderMethod: 'prepend',    // prepend | append | before | after
+    inputUploadUrl: null,       // set url
+    inputName: '',              // optional, set input name
+    inputMultiple: '',          // optional, multiple | ''
+    allowedFileTypes : []       // optional, ['image/jpeg', 'image/png'] | []
 };
 ```
 
 ### Back-end API
+
+On back-end, dropzone need to get JSON with `status` and `statusText`, which is it using for testing and firing success or error.
+
+```
+POST /image/upload
+< 200
+< Content-Type: application/json
+{
+    "status": 200,
+    "statusText": "OK"
+}
+```
+
+Example back-end API for image upload.
 
 ```
 POST /image/upload
@@ -109,8 +115,7 @@ drop.templateStates({
 
 ### Dropzone.templateState(name:string, template:stringDoT[, data:object])
 
-Sets/updates single state template by name – data must be set when template is using variable(s) and
-when Dropzone is allready visibe (attached to DOM).
+Sets/updates single state template by name – data must be set when template is using variable(s) and when Dropzone is allready visibe (attached to DOM).
 
 ### Dropzone.updateState(name, data)
 
@@ -119,6 +124,17 @@ Updates state template using new data.
 ### Dropzone.toggleState(className:stringCssClass)
 
 Swith beetween active state classes like e.g.'is-error'
+
+
+## Feature plans
+
+* On multiple file upload, add `uploadAllEnd` and fire it after ended uploading all files
+* Refactore theme rendering and it's updating.
+* Added own functions for `renderMethod` option
+
+and.. if it will be possible
+
+* make Dropzone as jQuery free as it is possible :) (yeah! that's challenge)
 
 
 ## Author(s)

@@ -2,14 +2,15 @@
   "name": "dropzone",
   "repo": "chameleonui/dropzone",
   "description": "Dropzone component for file uploads",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "keywords": [],
   "dependencies": {
     "component/jquery": "1.9.1",
     "component/emitter": "*",
     "component/inherit": "*",
     "cayasso/doT": "*",
-    "component/upload": "*"
+    "component/upload": "*",
+    "chameleonui/indexof": "*"
   },
   "development": {},
   "license": "MIT",

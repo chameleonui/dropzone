@@ -54,8 +54,10 @@
 		.dropzone-default {
 			border: 3px dashed gray;
 		}
-		.dropzone-dragover {
-			border: 3px dashed blue;
+		.dropzone-default > .dropzone-default-body,
+		.dropzone-default > .dropzone-dragover-body {
+			display: block;
+			height: 
 		}
 		.dropzone-success,
 		.dropzone-error,
@@ -66,25 +68,46 @@
 		.dropzone.is-success .dropzone-success,
 		.dropzone.is-error .dropzone-error,
 		.dropzone.is-default .dropzone-default,
+		.dropzone.is-dragover .dropzone-default,
 		.dropzone.is-progress .dropzone-progress {
 			display: block;
+		}
+		.dropzone.is-dragover .dropzone-default {
+			color: olive;
+		}
+
+		.page-section {
+			display: block;
+			clear: both;
+			margin-bottom: 24px;
 		}
 	</style>
 </head>
 <body>
 
 	<h1>Dropzone test</h1>
+	
+	<div class="page-section">
+		<ul class="gallery-grid">
+			<li class="gallery-item">Block</li>
+		</ul>
+	</div>
 
-	<ul class="gallery-grid">
-		<li class="gallery-item">Block</li>
-	</ul>
+	<div class="page-section">
+		<div class="dropzone-placeholder js-second-dropzone-holder">
+			
+		</div>
+		<ul class="js-second-list">
+			<li>item</li>
+		</ul>
+	</div>
 
 	
 	<script src="build/build.js"></script>
 	<script>
 		var Dropzone = require('dropzone');
     	var dropOptions = {
-    		uploadUrl: 'http://daidalos.apiary.io/image-block/image/upload'
+    		inputUploadUrl: 'http://daidalos.apiary.io/image-block/image/upload',
     	}
     	var drop = new Dropzone('.gallery-grid', dropOptions);
 
@@ -142,7 +165,52 @@
 
 		drop.on('uploadEnd', function(){
 			// Do something on upload end
-			console.log('Upload Ended', this.xhrResponse);
+			console.log('Upload Ended', this.xhrResponseArray);
+		});
+
+		// ===============================================================
+		// DROPZONE 2
+
+		var dropSecond = new Dropzone('.js-second-dropzone-holder', {
+			inputUploadUrl: 'http://daidalos.apiary.io/image-block/image/upload',
+    		inputName: 'pekabooo',
+    		inputMultiple: 'multiple',
+    		allowedFileTypes: ['image/jpeg', 'image/png']
+		});
+		var stateTemplatesVars2 = {
+			'errorState': {
+				errorMsg: 'Error msg!'
+			},
+			'successState': {
+				successMsg: 'Success!'
+			}
+		};
+		dropSecond.templateState('successState','<i class="icon-plus"></i><span>{{=it.successMsg}}</span>');
+		dropSecond.templateState('errorState','{{=it.errorMsg}}');
+		
+		// set the values for templates
+		
+		// show dropzone in DOM using variables
+		dropSecond.show(stateTemplatesVars2);
+
+		// update template on visible dropzone but you must set variables too
+		dropSecond.templateState('defaultState','<strong>{{=it.defaultMsg}}</strong>', { defaultMsg: 'Hombres!' });
+
+		// update multiple teplates in one function of course also with variables
+		dropSecond.templateStates({
+			'successState': {
+				template: '<strong>{{=it.successMsg}}</strong>', 
+				data: { successMsg: 'Yahoooo!' }
+			},
+			'progressState': {
+				template: '<div class="progress-bar" style="width:{{=it.percent}}%;"></div>',
+				data: { percent: 0 }
+			}
+		});
+
+		dropSecond.on('uploadEnd', function(){
+			// Do something on upload end
+			console.log('Upload Ended', this.xhrResponseArray);
 		});
 
 	</script>
