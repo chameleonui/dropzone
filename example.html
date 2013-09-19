@@ -68,8 +68,12 @@
 		.dropzone.is-success .dropzone-success,
 		.dropzone.is-error .dropzone-error,
 		.dropzone.is-default .dropzone-default,
+		.dropzone.is-dragover .dropzone-default,
 		.dropzone.is-progress .dropzone-progress {
 			display: block;
+		}
+		.dropzone.is-dragover .dropzone-default {
+			color: olive;
 		}
 
 		.page-section {
@@ -161,7 +165,7 @@
 
 		drop.on('uploadEnd', function(){
 			// Do something on upload end
-			console.log('Upload Ended', this.xhrResponse);
+			console.log('Upload Ended', this.xhrResponseArray);
 		});
 
 		// ===============================================================
@@ -171,7 +175,7 @@
 			inputUploadUrl: 'http://daidalos.apiary.io/image-block/image/upload',
     		inputName: 'pekabooo',
     		inputMultiple: 'multiple',
-    		allowedFileTypes: ['image/jpeg']
+    		allowedFileTypes: ['image/jpeg', 'image/png']
 		});
 		var stateTemplatesVars2 = {
 			'errorState': {
@@ -202,6 +206,11 @@
 				template: '<div class="progress-bar" style="width:{{=it.percent}}%;"></div>',
 				data: { percent: 0 }
 			}
+		});
+
+		dropSecond.on('uploadEnd', function(){
+			// Do something on upload end
+			console.log('Upload Ended', this.xhrResponseArray);
 		});
 
 	</script>
