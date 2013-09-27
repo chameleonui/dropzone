@@ -12,13 +12,18 @@ var defaults = {
     inputName: 'input-upload',
     inputMultiple: '',
     allowedFileTypes : [],
+
     template: '<li class="dropzone is-default" id="token_InstanceId"><div class="dropzone-default"><div class="dropzone-default-body">{{=it.defaultState}}</div><div class="dropzone-dragover-body">{{=it.dragoverState}}</div><div class="dropzone-active-area"><input id="token_UploadInputId" type="file" name="token_UploadInputName" token_Multiple></div></div><div class="dropzone-success">{{=it.successState}}</div><a href="#" class="dropzone-error">{{=it.errorState}}</a><div class="dropzone-progress">{{=it.progressState}}</div></li>',
+
     classes: {
+
         dropzone: '.dropzone',
+        defaultState: '.dropzone-default-body',
+        dragoverState: '.dropzone-dragover-body',
         successState: '.dropzone-success',
         errorState: '.dropzone-error',
         progressState: '.dropzone-progress',
-        defaultState: '.dropzone-default .dropzone-default-body',
+
         isSuccess: 'is-success',
         isError: 'is-error',
         isDragover: 'is-dragover',
@@ -43,7 +48,7 @@ function Dropzone(element, options) {
     this._errorCheck(this.instanceId); // checkt for some predictable errors
 
     this.options.template = this._tokenizer(this.options.template); // include tokens into template and return it back to template
-    this.tokenizedTemplate = this.options.template;
+    this._tokenizedTemplate = this.options.template;
     this._element = element;
     this._$element = $(this._element);
     this._inputId = '#' + this.dropzoneInputId;
@@ -53,6 +58,29 @@ function Dropzone(element, options) {
     this.resJson = null;
     this._isVisible = false;
     this._template = null;
+    this.fileData = null;
+    this._newTemplateData = null;
+    this._udatedStates = null;
+    this.emmitError = null;
+
+    this._defaultStates = {
+        'defaultState' : '{{=it.defaultState}}',
+        'dragoverState' : '{{=it.dragoverState}}',
+        'successState' : '{{=it.successState}}',
+        'errorState' : '{{=it.errorState}}',
+        'progressState' : '{{=it.progressState}}'
+    };
+
+    this._defaultData = {
+        'defaultState' : '<span>Default</span>',
+        'dragoverState' : '<span>Place items here</span>',
+        'successState' : '<span>Success</span>',
+        'errorState' : '<span>Error!</span>',
+        'progressState' : '<span>Progress</span>'
+    };
+
+    this._compiledTemplate = dot.compile(this._tokenizedTemplate); // fn s překompilovaným doT
+    this._dropzoneTemplate = this._compiledTemplate(this._defaultData); // vygenerovaný kpmpletní template
 
     this._stateTemplates = {
         successState: function() { return '<span>Success</span>'; },
@@ -62,8 +90,8 @@ function Dropzone(element, options) {
         dragoverState: function() { return '<span>Place items here</span>'; }
     };
 
-    this.template();
     this._onClickError();
+
 }
 
 module.exports = Dropzone;
@@ -71,12 +99,15 @@ module.exports = Dropzone;
 // Inherit features from Emmiter 
 inherit(Dropzone, Emitter);
 
-Dropzone.prototype.show = function(stateTemplatesVars) {
+Dropzone.prototype.show = function() {
 
     if ($.fn[this.options.renderMethod]) {
-        var templateStates = this._createStateTemplates(stateTemplatesVars),
-            dropzone = this.create(templateStates);
-        this._$element[this.options.renderMethod](dropzone);
+        // var templateStates = this._createStateTemplates(stateTemplatesVars),
+        //     dropzone = this.create(templateStates);
+        // this._$element[this.options.renderMethod](dropzone);
+        this._$element[this.options.renderMethod](this._dropzoneTemplate);
+    } else {
+        throw new Error('Dropzone ID# ' + this.dropzoneId + ': as renderMethod use: prepend | apend | before | after');
     }
 
     this._isVisible = true;
@@ -95,67 +126,81 @@ Dropzone.prototype.hide = function() {
     var dropEl = document.getElementById(this.dropzoneId);
     dropEl.parentNode.removeChild(dropEl);
 
-    // jQuery way
-    // $('#' + this.dropzoneId).remove();
-
     this._isVisible = false;
     this.emit('hide');
     return this;
 };
 
-Dropzone.prototype.template = function(dotTemplate) {
-    this._template = dot.template(dotTemplate || this.options.template);
-    return this._template;
+Dropzone.prototype.cusomizeTemplate = function(templateData, data) {
+    if (typeof templateData === 'object' && typeof data === 'object') {
+        this._templateUpdate(templateData);
+        this._templateBuild(data);
+    } else {
+        throw new Error('Dropzone ID# ' + this.dropzoneId + ': to customizeTemplate you have to insert proper data objects');
+    }
+
+    return this;
 };
 
-Dropzone.prototype.create = function(stateTemplates) {
-    return this._template(stateTemplates);
-};
-
-Dropzone.prototype._createStateTemplates = function(teplatesVars) {
-    var result = {},
-        key;
-    teplatesVars = teplatesVars || {};
-    for (key in this._stateTemplates) {
-        if (teplatesVars[key]) {
-            result[key] = this._stateTemplates[key](teplatesVars[key]);
-        } else {
-            result[key] = this._stateTemplates[key]();
+Dropzone.prototype._templateUpdate = function(templateData) {
+    var i;
+    for (i in this._defaultStates) {
+        if (!(templateData[i])) {
+            templateData[i] = this._defaultStates[i];
         }
     }
-    return result;
+    this._udatedStates = templateData; // fill object _updatedState with new data
+    this._compiledTemplate = this._compiledTemplate(templateData);
+
+    return this;
 };
 
-Dropzone.prototype.templateStates = function(templates) {
-    var key, name, template, data;
-    for (key in templates) {
-        name = key;
-        template = templates[key].template;
-        data = templates[key].data || null;
-        this.templateState(name, template, data);
+Dropzone.prototype._templateBuild = function(data) {
+    var temp = dot.compile(this._compiledTemplate);
+    var i;
+    for (i in this._defaultData) {
+        if (!(data[i])) {
+            data[i] = this._defaultData[i];
+        }
     }
-    return this._stateTemplates;
+
+    this._dropzoneTemplate = temp(data);
+
+    return this;
 };
 
-Dropzone.prototype.templateState = function(name, template, data) {
-    this._stateTemplates[name] = dot.template(template);
+Dropzone.prototype.updateState = function(stateName, stateData, stateTemplate) {
+    var _thisStateTemplate;
+    var _thisStateData;
+    var _thisUpdatedState;
+
     if (this._isVisible) {
-        this.updateState(name, data);
-    }
-    return this._stateTemplates[name];
-};
 
-Dropzone.prototype.updateState = function(name, data) {
-    if (this._isVisible) {
-        $('#' + this.dropzoneId).find(this.options.classes[name]).html(this._stateTemplates[name](data));
+        if (typeof stateData === 'object') {
+            _thisStateData = stateData;
+
+            if (!stateTemplate) {
+                if (typeof this._udatedStates === 'object') {
+                    _thisStateTemplate = this._udatedStates[stateName];
+                } else {
+                    _thisStateTemplate = this._defaultStates[stateName];
+                }
+            }
+
+            if (typeof stateTemplate === 'string') {
+                _thisStateTemplate = stateTemplate
+            }
+        }
+
+        _thisUpdatedState = dot.compile(_thisStateTemplate);
+        _thisUpdatedState = _thisUpdatedState(_thisStateData);
+
+        $('#' + this.dropzoneId).find(this.options.classes[stateName]).html(_thisUpdatedState);
     }
-    return this._stateTemplates[name](data);
+    return this;
 };
 
 Dropzone.prototype.toggleState = function(className) {
-    // the jQuery way
-    // $('#' + this.dropzoneId).attr('class', this.options.classes.dropzone.replace('.', '') + ' ' + className.replace('.', ''));
-    
     // the Vanilla JS way
     var dropzoneId = document.getElementById(this.dropzoneId);
     if (dropzoneId) {
@@ -166,6 +211,7 @@ Dropzone.prototype.toggleState = function(className) {
 };
 
 Dropzone.prototype._tokenizer = function(htmlTemplate) {
+    var i;
     var tokenMap = [
         { "find": "token_InstanceId",       "replaceBy" : this.dropzoneId },
         { "find": "token_UploadInputId",    "replaceBy" : this.dropzoneInputId },
@@ -173,7 +219,7 @@ Dropzone.prototype._tokenizer = function(htmlTemplate) {
         { "find": "token_Multiple",         "replaceBy" : this.dropzoneInputMultiple }
     ];
 
-    for (var i = tokenMap.length - 1; i >= 0; i--) {
+    for (i = tokenMap.length - 1; i >= 0; i--) {
         htmlTemplate = htmlTemplate.replace(new RegExp(tokenMap[i].find, 'g'), tokenMap[i].replaceBy);
     };
 
@@ -185,7 +231,7 @@ Dropzone.prototype._tokenizer = function(htmlTemplate) {
 // -------------------
 
 Dropzone.prototype._onUploadProgress = function(event) {
-    this.updateState('progressState', {percent: event.percent});
+    // console.log(event.percent);
     this.toggleState(this.options.classes.isProgress);
 
     this.emit('uploadProgress');
@@ -193,9 +239,12 @@ Dropzone.prototype._onUploadProgress = function(event) {
 };
 
 Dropzone.prototype._onUploadError = function(event) {
-    this.updateState('errorState', {errorMsg: (this.xhrResponse === null) ? 'Error!' : (this.resJson.statusText === null) ? 'Error!' : this.resJson.statusText });
+    var errorMsg = (this.xhrResponse === null) ? 'Error!' : (this.resJson.statusText === null) ? 'Error!' : this.resJson.statusText;
+
+    this.updateState('errorState', {errorState: errorMsg });
     this.toggleState(this.options.classes.isError)._resetInputFile();
 
+    this.emmitError = errorMsg;
     this.emit('uploadError');
     return this;
 };
@@ -208,32 +257,41 @@ Dropzone.prototype._onUploadEnd = function(res) {
         // test if I get error status in response msg
         this.resJson = JSON.parse(this.xhrResponse.response);
         if (this.resJson.status === 200) {
+
             this.xhrResponseArray.push(this.resJson);
             this.toggleState(this.options.classes.isSuccess);
+
             setTimeout(function() {
                 _this.toggleState(_this.options.classes.isDefault)._resetInputFile();
             }, 1000);
+
             this.emit('uploadEnd');
+
         } else {
+
             this._onUploadError();
+
         }
     } else {
+
         this._onUploadError();
+
     }
 
     return this;
 };
 
 Dropzone.prototype._uploadFiles = function() {
-    var _this = this, i, file;
     var denied = [];
+    var i;
     var uploadInput = document.getElementById(this.dropzoneInputId);
     // this._input = document.querySelector('#' + this.dropzoneInputId);
     this.xhrResponseArray = [];
 
-    for (var i = uploadInput.files.length - 1; i >= 0; i--) {
+    for (i = uploadInput.files.length - 1; i >= 0; i--) {
 
         file = uploadInput.files[i];
+        this.fileData = file;
 
         // checkt if i have set allowedFileTypes
         if (this.options.allowedFileTypes.length > 0) {
@@ -345,5 +403,3 @@ Dropzone.prototype._errorCheck = function(instanceId) {
         return console.error(instance + 'inputUploadUrl must not be null! You have to set it in options');
     }
 };
-
-

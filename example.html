@@ -111,38 +111,8 @@
     	}
     	var drop = new Dropzone('.gallery-grid', dropOptions);
 
-		// set dropzone templates by one and without variables values
-        drop.templateState('successState','<i class="icon-plus"></i><span>{{=it.successMsg}}</span>');
-		drop.templateState('errorState','{{=it.errorMsg}}');
-		
-		// set the values for templates
-		var stateTemplatesVars = {
-			'errorState': {
-				errorMsg: 'Error msg!'
-			},
-			'successState': {
-				successMsg: 'Success!'
-			}
-		};
-		
 		// show dropzone in DOM using variables
-		drop.show(stateTemplatesVars);
-
-		// update template on visible dropzone but you must set variables too
-		drop.templateState('defaultState','<strong>{{=it.defaultMsg}}</strong>', { defaultMsg: 'Ola!' });
-
-		// update multiple teplates in one function of course also with variables
-		drop.templateStates({
-			'successState': {
-				template: '<strong>{{=it.successMsg}}</strong>', 
-				data: { successMsg: 'Yahoooo!' }
-			},
-			'progressState': {
-				template: '<div class="progress-bar" style="width:{{=it.percent}}%;"></div>',
-				data: { percent: 0 }
-			}
-		});
-
+		drop.show();
 
 		//
 		// Emitted events
@@ -155,7 +125,7 @@
 
 		drop.on('uploadProgress', function(){
 			// Do something on upload progress
-			console.log('Upload in progress');
+			console.log('Upload in progress', event.percent + '%');
 		});
 
 		drop.on('uploadError', function(e){
@@ -171,46 +141,53 @@
 		// ===============================================================
 		// DROPZONE 2
 
+		// defined options
 		var dropSecond = new Dropzone('.js-second-dropzone-holder', {
 			inputUploadUrl: 'http://daidalos.apiary.io/image-block/image/upload',
     		inputName: 'pekabooo',
-    		inputMultiple: 'multiple',
-    		allowedFileTypes: ['image/jpeg', 'image/png']
-		});
-		var stateTemplatesVars2 = {
-			'errorState': {
-				errorMsg: 'Error msg!'
-			},
-			'successState': {
-				successMsg: 'Success!'
-			}
-		};
-		dropSecond.templateState('successState','<i class="icon-plus"></i><span>{{=it.successMsg}}</span>');
-		dropSecond.templateState('errorState','{{=it.errorMsg}}');
-		
-		// set the values for templates
-		
-		// show dropzone in DOM using variables
-		dropSecond.show(stateTemplatesVars2);
-
-		// update template on visible dropzone but you must set variables too
-		dropSecond.templateState('defaultState','<strong>{{=it.defaultMsg}}</strong>', { defaultMsg: 'Hombres!' });
-
-		// update multiple teplates in one function of course also with variables
-		dropSecond.templateStates({
-			'successState': {
-				template: '<strong>{{=it.successMsg}}</strong>', 
-				data: { successMsg: 'Yahoooo!' }
-			},
-			'progressState': {
-				template: '<div class="progress-bar" style="width:{{=it.percent}}%;"></div>',
-				data: { percent: 0 }
-			}
+    		inputMultiple: 'multiple'
 		});
 
+		// defined own templates for states
+	    var _templateData = {
+	        'dragoverState' : '<span>{{=it.dragoverState}}</span>',
+	        'successState' : '<i class="icon-plus"></i><span>{{=it.successMsg}}</span>',
+	        'progressState' : '<div class="progress-bar" style="width:{{=it.percent}}%;"></div>'
+	    }
+	    // defined data for own states
+		var _stateData = {
+	        'defaultState' : '<strong>Hola hombres!!!</strong>',
+	        'successMsg' : 'Yahoooo!!',
+	        'percent' : 'O'
+	    }
+
+	    // push customized templateData and stateData to stored html template
+	    dropSecond.cusomizeTemplate(_templateData, _stateData);
+
+	    // show dropzone, using template from stored html string
+	    dropSecond.show();
+
+
+	    // do something on unloadEnd
 		dropSecond.on('uploadEnd', function(){
-			// Do something on upload end
+
 			console.log('Upload Ended', this.xhrResponseArray);
+
+			// update various states on upload end
+			dropSecond.updateState('defaultState', {'defaultState' : 'Nová defaulta'});
+			dropSecond.updateState('successState', {'successMsg' : 'Ouuuu lalala!'});
+		});
+
+		// do something on upload progress
+		dropSecond.on('uploadProgress', function() {
+
+			// loading progress bar
+			var self = document.getElementById(this.dropzoneId).getElementsByClassName('progress-bar');
+			var selector = '#' + this.dropzoneId + ' .progress-bar';
+			// var self = document.querySelectorAll(selector); // querySelectorAll works, but it's broken by livereloading page
+			if (self) {
+				self[0].style.width = event.percent + '%';
+			}
 		});
 
 	</script>
