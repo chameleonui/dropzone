@@ -1,5 +1,13 @@
 ## v2
 
+### v2.1.0
+
+* refactored js
+* refactored API - now it is more using friendly and more error proof
+* changed methods of rendering and updating theme
+* a little performace savings
+* default theme is generated and stored by init. Customizing by `Dropzone.customizeTemplate()` generate new template and replace default template in storage. When you `Dropzone.show()` or `Dropzone.hide()`, script use stored template and will not generate template again. On `Dropzone.updateState()` it only makes changes in rendered DOM, not in stored template.
+
 ### v2.0.0
 
 * refactored js

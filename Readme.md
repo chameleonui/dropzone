@@ -1,6 +1,6 @@
 # Dropzone
 
-Provides skinable UI component for files upload
+Provides skinable UI component for files upload with support for Drag 'n' Drop.
 
 ## Installation
 
@@ -9,6 +9,7 @@ Install with [component](http://component.io):
 ```sh
 $ component install chameleonui/dropzone
 ```
+
 
 ## API
 
@@ -19,11 +20,12 @@ new Dropzone(element, options);
 element - selector of element where should be dropzone placed
 option - definable options
 
-Dropzone has 4 major states:
-- default
-- progress
-- success
-- error
+Dropzone has 5 states:
+* defaultState
+* dragoverState
+* successState
+* errorState
+* progressState
 
 and default state may have minor state isDragover enabled by CSS class.
 
@@ -39,7 +41,32 @@ var options = {
 };
 ```
 
-### Back-end API
+
+## Functions
+
+### Dropzone.show(stateTempaltesVars:object)
+
+Build Dropzone templates and show Dropzone in DOM.
+
+### Dropzone.hide()
+
+Remove Dropzone from DOM;
+
+### Dropzone.cusomizeTemplate(templateData:object DoT, statesData:object)
+
+Customize default dropzone theme with own custom templateData and it's statesData
+
+### Dropzone.updateState(stateName:string, stateData:object [, stateTemplate:string doT])
+
+Updates state compiled template using new data.
+
+### Dropzone.toggleState(className:stringCssClass)
+
+Swith beetween active state classes like e.g.'is-error'
+
+
+
+## Back-end API
 
 On back-end, dropzone need to get JSON with `status` and `statusText`, which is it using for testing and firing success or error.
 
@@ -78,58 +105,11 @@ POST /image/upload
 }
 ```
 
-## Functions
-
-### Dropzone.show(stateTempaltesVars:object)
-
-Build Dropzone templates and show Dropzone in DOM.
-
-### Dropzone.hide()
-
-Remove Dropzone from DOM;
-
-### Dropzone.template(template:stringDoT):function
-
-Replace Dropzone main template
-
-### Dropzone.create(stateTemplates:stringHtml):stringHtml
-
-Build and return Dropzone HTML
-
-### Dropzone.templateStates(templates:object)
-
-Sets/updates multiple state templates:
-
-```js
-drop.templateStates({
-    'successState': {
-        template: '<strong>{{=it.successMsg}}</strong>', 
-        data: { successMsg: 'Yahoooo!' }
-    },
-    'progressState': {
-        template: '<div class="progress-bar" style="width:{{=it.percent}}%;"></div>',
-        data: { percent: 0 }
-    }
-});
-```
-
-### Dropzone.templateState(name:string, template:stringDoT[, data:object])
-
-Sets/updates single state template by name – data must be set when template is using variable(s) and when Dropzone is allready visibe (attached to DOM).
-
-### Dropzone.updateState(name, data)
-
-Updates state template using new data.
-
-### Dropzone.toggleState(className:stringCssClass)
-
-Swith beetween active state classes like e.g.'is-error'
-
 
 ## Feature plans
 
 * On multiple file upload, add `uploadAllEnd` and fire it after ended uploading all files
-* Refactore theme rendering and it's updating.
+* Done :) ~~Refactore theme rendering and it's updating.~~
 * Added own functions for `renderMethod` option
 
 and.. if it will be possible
