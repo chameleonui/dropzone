@@ -106,7 +106,11 @@
 	<script src="build/build.js"></script>
 	<script>
 		var Dropzone = require('dropzone');
-    	var dropOptions = {
+    	
+    	// ===============================================================
+		// DROPZONE 1 - the easy way
+
+		var dropOptions = {
     		inputUploadUrl: 'http://daidalos.apiary.io/image-block/image/upload',
     	}
     	var drop = new Dropzone('.gallery-grid', dropOptions);
@@ -139,7 +143,7 @@
 		});
 
 		// ===============================================================
-		// DROPZONE 2
+		// DROPZONE 2 - the more customized way
 
 		// defined options
 		var dropSecond = new Dropzone('.js-second-dropzone-holder', {
