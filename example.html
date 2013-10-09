@@ -57,7 +57,7 @@
 		.dropzone-default > .dropzone-default-body,
 		.dropzone-default > .dropzone-dragover-body {
 			display: block;
-			height: 
+			height: 100%;
 		}
 		.dropzone-success,
 		.dropzone-error,
@@ -154,19 +154,19 @@
 
 		// defined own templates for states
 	    var _templateData = {
-	        'dragoverState' : '<span>{{=it.dragoverState}}</span>',
+	        'dragoverState' : '<span>{{=it.dragoverMsg}}</span>',
 	        'successState' : '<i class="icon-plus"></i><span>{{=it.successMsg}}</span>',
-	        'progressState' : '<div class="progress-bar" style="width:{{=it.percent}}%;"></div>'
+	        'progressState' : '{{=it.progressMsg}}<div class="progress-bar" style="width:0%;"></div>'
 	    }
 	    // defined data for own states
-		var _stateData = {
-	        'defaultState' : '<strong>Hola hombres!!!</strong>',
+		var _stateMsgs = {
+	        'defaultMsg' : '<strong>Hola hombres!!!</strong>',
 	        'successMsg' : 'Yahoooo!!',
-	        'percent' : 'O'
+	        'progressMsg' : 'Uploading ...'
 	    }
 
 	    // push customized templateData and stateData to stored html template
-	    dropSecond.cusomizeTemplate(_templateData, _stateData);
+	    dropSecond.cusomizeTemplate(_templateData, _stateMsgs);
 
 	    // show dropzone, using template from stored html string
 	    dropSecond.show();
@@ -178,7 +178,7 @@
 			console.log('Upload Ended', this.xhrResponseArray);
 
 			// update various states on upload end
-			dropSecond.updateState('defaultState', {'defaultState' : 'Nová defaulta'});
+			dropSecond.updateState('defaultState', {'defaultMsg' : 'Nová defaulta'});
 			dropSecond.updateState('successState', {'successMsg' : 'Ouuuu lalala!'});
 		});
 

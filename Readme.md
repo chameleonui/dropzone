@@ -21,13 +21,21 @@ element - selector of element where should be dropzone placed
 option - definable options
 
 Dropzone has 5 states:
+
 * defaultState
 * dragoverState
 * successState
 * errorState
 * progressState
 
-and default state may have minor state isDragover enabled by CSS class.
+and their 5 default state messages:
+
+* defaultMsg
+* dragoverMsg
+* successMsg
+* errorMsg
+* progressMsg
+
 
 ### Default values and Dropzone options are:
 

@@ -1,5 +1,10 @@
 ## v2
 
+### v2.1.1
+
+* fixed bug when updating default theme (usually by error msg)
+* fixed state names and state messages
+
 ### v2.1.0
 
 * refactored js

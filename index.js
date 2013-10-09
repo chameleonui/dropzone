@@ -64,31 +64,35 @@ function Dropzone(element, options) {
     this.emmitError = null;
 
     this._defaultStates = {
-        'defaultState' : '{{=it.defaultState}}',
-        'dragoverState' : '{{=it.dragoverState}}',
-        'successState' : '{{=it.successState}}',
-        'errorState' : '{{=it.errorState}}',
-        'progressState' : '{{=it.progressState}}'
+        'defaultState' : '{{=it.defaultMsg}}',
+        'dragoverState' : '{{=it.dragoverMsg}}',
+        'successState' : '{{=it.successMsg}}',
+        'errorState' : '{{=it.errorMsg}}',
+        'progressState' : '{{=it.progressMsg}}'
     };
 
     this._defaultData = {
-        'defaultState' : '<span>Default</span>',
-        'dragoverState' : '<span>Place items here</span>',
-        'successState' : '<span>Success</span>',
-        'errorState' : '<span>Error!</span>',
-        'progressState' : '<span>Progress</span>'
+        'defaultMsg' : '<span>Default</span>',
+        'dragoverMsg' : '<span>Place items here</span>',
+        'successMsg' : '<span>Success</span>',
+        'errorMsg' : '<span>Error!</span>',
+        'progressMsg' : '<span>Progress</span>'
     };
-
+    
     this._compiledTemplate = dot.compile(this._tokenizedTemplate); // fn s překompilovaným doT
-    this._dropzoneTemplate = this._compiledTemplate(this._defaultData); // vygenerovaný kpmpletní template
+    
+    var addDefStates = this._compiledTemplate(this._defaultStates);
+    var compileDefStates = dot.compile(addDefStates);
 
-    this._stateTemplates = {
-        successState: function() { return '<span>Success</span>'; },
-        errorState: function() { return '<span>Error!</span>'; },
-        progressState: function() { return '<span>Progress</span>'; },
-        defaultState: function() { return '<span>Default</span>'; },
-        dragoverState: function() { return '<span>Place items here</span>'; }
-    };
+    this._dropzoneTemplate = compileDefStates(this._defaultData); // vygenerovaný kpmpletní template
+
+    // this._stateTemplates = {
+    //     successState: function() { return '<span>Success</span>'; },
+    //     errorState: function() { return '<span>Error!</span>'; },
+    //     progressState: function() { return '<span>Progress</span>'; },
+    //     defaultState: function() { return '<span>Default</span>'; },
+    //     dragoverState: function() { return '<span>Place items here</span>'; }
+    // };
 
     this._onClickError();
 
@@ -180,10 +184,10 @@ Dropzone.prototype.updateState = function(stateName, stateData, stateTemplate) {
             _thisStateData = stateData;
 
             if (!stateTemplate) {
-                if (typeof this._udatedStates === 'object') {
-                    _thisStateTemplate = this._udatedStates[stateName];
-                } else {
+                if (this._udatedStates === null) {
                     _thisStateTemplate = this._defaultStates[stateName];
+                } else {
+                    _thisStateTemplate = this._udatedStates[stateName];
                 }
             }
 
@@ -241,7 +245,7 @@ Dropzone.prototype._onUploadProgress = function(event) {
 Dropzone.prototype._onUploadError = function(event) {
     var errorMsg = (this.xhrResponse === null) ? 'Error!' : (this.resJson.statusText === null) ? 'Error!' : this.resJson.statusText;
 
-    this.updateState('errorState', {errorState: errorMsg });
+    this.updateState('errorState', {'errorMsg' : errorMsg });
     this.toggleState(this.options.classes.isError)._resetInputFile();
 
     this.emmitError = errorMsg;
