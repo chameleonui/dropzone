@@ -45,7 +45,13 @@ var options = {
     inputUploadUrl: null,       // set url
     inputName: '',              // optional, set input name
     inputMultiple: '',          // optional, multiple | ''
-    allowedFileTypes : []       // optional, ['image/jpeg', 'image/png'] | []
+    allowedFileTypes : [],      // optional, ['image/jpeg', 'image/png'] | []
+    maxUploadedItems : 10,      // optional, integer
+    maxFileSize : 0,            // optional, integer
+
+    allowedFileTypesErrorMsg: 'File "__FILENAME__" is not allowed file type.',      // optional, set your own error message
+    maxUploadedItemsErrorMsg: 'You can upload only 10 items at once',               // optional, set your own error message
+    maxFileSizeErrorMsg: 'File "__FILENAME__" is too big.',                         // optional, set your own error message
 };
 ```
 

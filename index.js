@@ -4,7 +4,7 @@ var dot = require('doT');
 var Emitter = require('emitter');
 var inherit = require('inherit');
 var Upload = require('upload');
-var indexOf = require('indexof');
+var index = require('indexof');
 
 var defaults = {
     renderMethod: 'prepend',
@@ -12,6 +12,11 @@ var defaults = {
     inputName: 'input-upload',
     inputMultiple: '',
     allowedFileTypes : [],
+    maxUploadedItems: 10,
+    maxFileSize: 0,
+    allowedFileTypesErrorMsg: 'File "__FILENAME__" is not allowed file type.',
+    maxUploadedItemsErrorMsg: 'You can upload only 10 items at once',
+    maxFileSizeErrorMsg: 'File "__FILENAME__" is too big.',
 
     template: '<li class="dropzone is-default" id="token_InstanceId"><div class="dropzone-default"><div class="dropzone-default-body">{{=it.defaultState}}</div><div class="dropzone-dragover-body">{{=it.dragoverState}}</div><div class="dropzone-active-area"><input id="token_UploadInputId" type="file" name="token_UploadInputName" token_Multiple></div></div><div class="dropzone-success">{{=it.successState}}</div><a href="#" class="dropzone-error">{{=it.errorState}}</a><div class="dropzone-progress">{{=it.progressState}}</div></li>',
 
@@ -61,7 +66,7 @@ function Dropzone(element, options) {
     this.fileData = null;
     this._newTemplateData = null;
     this._udatedStates = null;
-    this.emmitError = null;
+    this.errorMsg = null;
 
     this._defaultStates = {
         'defaultState' : '{{=it.defaultMsg}}',
@@ -248,9 +253,15 @@ Dropzone.prototype._onUploadError = function(event) {
     this.updateState('errorState', {'errorMsg' : errorMsg });
     this.toggleState(this.options.classes.isError)._resetInputFile();
 
-    this.emmitError = errorMsg;
-    this.emit('uploadError');
+    this._emmitErrorMsg(errorMsg);
     return this;
+};
+
+// emmit error msg
+Dropzone.prototype._emmitErrorMsg = function(msg) {
+    
+    this.errorMsg = msg || 'Error';
+    this.emit('error');
 };
 
 Dropzone.prototype._onUploadEnd = function(res) {
@@ -288,26 +299,68 @@ Dropzone.prototype._onUploadEnd = function(res) {
 Dropzone.prototype._uploadFiles = function() {
     var denied = [];
     var i;
+    var itemsToUpload = 0;
     var uploadInput = document.getElementById(this.dropzoneInputId);
     // this._input = document.querySelector('#' + this.dropzoneInputId);
     this.xhrResponseArray = [];
 
-    for (i = uploadInput.files.length - 1; i >= 0; i--) {
+    // test if file.length is smaller than maxUploadedItems
+    if (this.options.maxUploadedItems != 0 || this.options.maxUploadedItems > 0) {
+
+        if (uploadInput.files.length > this.options.maxUploadedItems) {
+            itemsToUpload = this.options.maxUploadedItems;
+
+            this._emmitErrorMsg(this.options.maxUploadedItemsErrorMsg.replace('__FILENAME__', file.name));
+        } else {
+            itemsToUpload = uploadInput.files.length;
+        }
+    }
+
+    for (i = 0; i < itemsToUpload; i++) {
 
         file = uploadInput.files[i];
         this.fileData = file;
 
-        // checkt if i have set allowedFileTypes
-        if (this.options.allowedFileTypes.length > 0) {
-            // and if so, checkt if files droper for input are eligible to upload
-            if (indexOf(this.options.allowedFileTypes, file.type) >= 0 ) {
-                this._uploadObject(file);
-            } else {
-                // in case i wan to store names of denied files
+        // check if filesize is allowed
+        if (this.options.maxFileSize != 0 || this.options.maxFileSize > 0) {
+
+            if (file.size > this.options.maxFileSize) {
+                
                 denied.push(file.name);
+                
+                this._emmitErrorMsg(this.options.maxFileSizeErrorMsg.replace('__FILENAME__', file.name));
+            
+            } else {
+
+                // check if i have set allowedFileTypes
+                if (this.options.allowedFileTypes.length > 0) {
+                    // and if so, checkt if files droper for input are eligible to upload
+                    if (this._indexOf(this.options.allowedFileTypes, file.type) >= 0 ) {
+                        this._uploadObject(file);
+                    } else {
+                        // in case i wan to store names of denied files
+                        denied.push(file.name);
+                        this._emmitErrorMsg(this.options.allowedFileTypesErrorMsg.replace('__FILENAME__', file.name));
+                    }
+                } else {
+                    this._uploadObject(file);
+                }
             }
         } else {
-            this._uploadObject(file);
+
+            // check if i have set allowedFileTypes
+            if (this.options.allowedFileTypes.length > 0) {
+                // and if so, checkt if files droper for input are eligible to upload
+                if (this._indexOf(this.options.allowedFileTypes, file.type) >= 0 ) {
+                    this._uploadObject(file);
+                } else {
+                    // in case i wan to store names of denied files
+                    denied.push(file.name);
+                    this._emmitErrorMsg(this.options.allowedFileTypesErrorMsg.replace('__FILENAME__', file.name));
+                }
+            } else {
+                this._uploadObject(file);
+            }
         }
     }
 
@@ -406,4 +459,8 @@ Dropzone.prototype._errorCheck = function(instanceId) {
     if (this.options.inputUploadUrl === null) {
         return console.error(instance + 'inputUploadUrl must not be null! You have to set it in options');
     }
+};
+
+Dropzone.prototype._indexOf = function(arr, obj){
+    return index(arr, obj);
 };

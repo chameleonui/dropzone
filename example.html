@@ -111,7 +111,7 @@
 		// DROPZONE 1 - the easy way
 
 		var dropOptions = {
-    		inputUploadUrl: 'http://daidalos.apiary.io/image-block/image/upload',
+    		inputUploadUrl: 'http://daidalos.apiary.io/image-block/image/upload'
     	}
     	var drop = new Dropzone('.gallery-grid', dropOptions);
 
@@ -149,7 +149,13 @@
 		var dropSecond = new Dropzone('.js-second-dropzone-holder', {
 			inputUploadUrl: 'http://daidalos.apiary.io/image-block/image/upload',
     		inputName: 'pekabooo',
-    		inputMultiple: 'multiple'
+    		inputMultiple: 'multiple',
+    		maxUploadedItems: '10',
+    		maxFileSize: '1200000',
+    		allowedFileTypes: [
+    			'image/jpeg',
+    			'image/png'
+    		]
 		});
 
 		// defined own templates for states
@@ -180,6 +186,10 @@
 			// update various states on upload end
 			dropSecond.updateState('defaultState', {'defaultMsg' : 'Nová defaulta'});
 			dropSecond.updateState('successState', {'successMsg' : 'Ouuuu lalala!'});
+		});
+
+		dropSecond.on('error', function() {
+			console.log( 'oh, yaiks!' ,this.errorMsg);
 		});
 
 		// do something on upload progress
